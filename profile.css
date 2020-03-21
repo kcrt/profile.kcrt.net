@@ -1,0 +1,38 @@
+body {
+	font-family: "Myriad Pro", "MyriadPro", "Helvetica Neue", "M PLUS Rounded 1c", "游ゴシック", "YuGothic", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", Meiryo, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+section > h2 {
+	border-bottom: dashed 1px #488DC7;
+}
+
+section:before {
+	padding-top: 70px;
+	content: "";
+	display: block;
+}
+
+section#me {
+	padding: 32px;
+	border-radius: 34px;
+	background: #ffffff;
+	box-shadow:  12px 12px 24px #c5c5c5, 
+	             -12px -12px 24px #ffffff;
+}
+
+i.license {
+	font-size: 1.5em;
+	color: #488DC7;
+	width: 1.2em;
+}
+
+i.publications {
+	font-size: 1.5em;
+	color: #488DC7;
+	width: 1.2em;
+}
+
+i.link {
+	font-size: 4em;
+	color: #488DC7;
+	width: 1.1em;
+}
