@@ -1,6 +1,33 @@
+:root {
+	--backgroundColor: #ffffff;
+	--textColor: #222222;
+	--linkColor: #488DC7; 
+}
+@media (prefers-color-scheme: dark) {
+	:root {
+		--backgroundColor: #222222;
+		--textColor: #ffffff;
+		--linkColor: #cc8888; 
+	}
+}
+
+
 body {
 	font-family: "Myriad Pro", "MyriadPro", "Helvetica Neue", "M PLUS Rounded 1c", "游ゴシック", "YuGothic", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", Meiryo, -apple-system, BlinkMacSystemFont, sans-serif;
+	background-color: var(--backgroundColor);
+	color: var(--textColor);
 }
+
+a{
+	color: var(--linkColor);
+}
+
+/* for bootstrap */
+li.list-group-item {
+	background-color: var(--backgroundColor);
+	color: var(--textColor);
+}
+
 section > h2 {
 	border-bottom: dashed 1px #488DC7;
 }
@@ -14,25 +41,33 @@ section:before {
 section#me {
 	padding: 32px;
 	border-radius: 34px;
-	background: #ffffff;
+	background: var(--backgroundColor);
 	box-shadow:  12px 12px 24px #c5c5c5, 
 	             -12px -12px 24px #ffffff;
 }
 
 i.license {
 	font-size: 1.5em;
-	color: #488DC7;
+	color: var(--linkColor);
 	width: 1.2em;
 }
 
 i.publications {
 	font-size: 1.5em;
-	color: #488DC7;
+	color: var(--linkColor);
 	width: 1.2em;
 }
 
 i.link {
 	font-size: 4em;
-	color: #488DC7;
+	color: var(--linkColor);
 	width: 1.1em;
+}
+
+a.btn {
+	background-color: var(--backgroundColor);
+}
+
+footer > hr {
+	background-color: var(--linkColor);
 }
