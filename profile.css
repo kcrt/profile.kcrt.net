@@ -18,7 +18,7 @@ body {
 	color: var(--textColor);
 }
 
-a{
+a {
 	color: var(--linkColor);
 }
 
@@ -70,4 +70,13 @@ a.btn {
 
 footer > hr {
 	background-color: var(--linkColor);
+}
+
+span.keyinfo {
+	font-family: monospace;
+	font-size: xx-small;
+	color: #888;
+}
+span.activeinfo {
+	color: var(--linkColor);
 }
