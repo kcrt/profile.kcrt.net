@@ -1,13 +1,14 @@
 :root {
 	--backgroundColor: #ffffff;
 	--textColor: #222222;
-	--linkColor: #488DC7; 
+	--linkColor: #488DC7;
 }
+
 @media (prefers-color-scheme: dark) {
 	:root {
 		--backgroundColor: #222222;
 		--textColor: #ffffff;
-		--linkColor: #cc8888; 
+		--linkColor: #cc8888;
 	}
 }
 
@@ -28,7 +29,7 @@ li.list-group-item {
 	color: var(--textColor);
 }
 
-section > h2 {
+section>h2 {
 	border-bottom: dashed 1px #488DC7;
 }
 
@@ -42,14 +43,15 @@ section#me {
 	padding: 32px;
 	border-radius: 34px;
 	background: var(--backgroundColor);
-	box-shadow:  12px 12px 24px #c5c5c5, 
-	             -12px -12px 24px #ffffff;
+	box-shadow: 12px 12px 24px #c5c5c5,
+		-12px -12px 24px #ffffff;
 }
 
 i.license {
 	font-size: 1.5em;
 	color: var(--linkColor);
-	width: 1.2em;
+	width: 1.5em;
+	text-align: center;
 }
 
 i.publications {
@@ -68,7 +70,7 @@ a.btn {
 	background-color: var(--backgroundColor);
 }
 
-footer > hr {
+footer>hr {
 	background-color: var(--linkColor);
 }
 
@@ -77,6 +79,7 @@ span.keyinfo {
 	font-size: xx-small;
 	color: #888;
 }
+
 span.activeinfo {
 	color: var(--linkColor);
 }
