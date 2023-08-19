@@ -51,23 +51,24 @@ section#me {
 		-12px -12px 24px #ffffff;
 }
 
-i.license {
+.license-icon {
 	font-size: 1.5em;
 	color: var(--linkColor);
-	width: 1.5em;
-	text-align: center;
 }
 
-i.publications {
+.publication-icon {
 	font-size: 1.5em;
 	color: var(--linkColor);
 	width: 1.2em;
 }
 
-i.link {
-	font-size: 4em;
+.link-icon {
 	color: var(--linkColor);
-	width: 1.1em;
+}
+
+#twitter-tomb {
+	font-size: 2em;
+	padding: 0.4em .2em 0.1em 0.4em;
 }
 
 a.btn {

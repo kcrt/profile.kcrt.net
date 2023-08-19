@@ -34,7 +34,7 @@
 	<link rel="icon" href="./kcrt.png" />
 
 	<link rel="stylesheet" href="./bootstrap4/css/bootstrap.min.css" />
-	<link rel="stylesheet" href="./fontawesome5/css/all.min.css" />
+	<script src="./fontawesome5/js/all.min.js" defer></script>
 	<script src="./jquery-3.4.1.min.js" defer></script>
 	<script src="./bootstrap4/js/bootstrap.min.js" defer></script>
 
@@ -99,11 +99,11 @@ mailto:abuse@hotmail.com
 						<li class="list-group-item">住んでいるところ： <span class="adr"><span class="country-name">Japan</span>,
 								<span class="region">神奈川県</span></span></li>
 						<li class="list-group-item">誕生日： <time class="bday" datetime="1984-09-24">9月24日</time></li>
-						<li class="list-group-item"><i class="publications fas fa-key"></i> <a class="url"
+						<li class="list-group-item"><i class="publication-icon fas fa-key"></i> <a class="url"
 								href="https://github.com/kcrt.keys">SSH</a><span class="keyinfo"> ssh-ed25519
 								AAAAC3NzaC1lZDI1NTE5AAAAIJOPgJQcfABeJYG6ANq9VpyO<span
 									class="activeinfo highlight">/kcrt/</span>V5gp7pcZpCtW6U</span></li>
-						<li class="list-group-item"><i class="publications fas fa-key"></i> <a
+						<li class="list-group-item"><i class="publication-icon fas fa-key"></i> <a
 								href="https://www.facebook.com/kcrtjp/publickey/download/" class="url">PGP</a><span
 								class="keyinfo"> 5721 E44D 8C71 0D8E
 								B938 2F31 8C49 E22D A193
@@ -117,27 +117,37 @@ mailto:abuse@hotmail.com
 			<h2><i class="fas fa-id-card"></i> 資格と免許 <small class="text-muted">Licenses and Certifications</small></h2>
 			<div class="media-body">
 				<ul class="list-group list-group-flush">
-					<li class="list-group-item"><i class="license fas fa-keyboard"></i> ソフトウェア開発技術者 (現 応用情報技術者) <small
-							class="text-muted">Software Design &amp; Development Engineer (National examination)
-						</small></li>
-					<li class="list-group-item"><i class="license fas fa-shield-alt"></i> 情報セキュリティスペシャリスト (現
+					<li class="list-group-item"><i class="license-icon fas fa-keyboard fa-lg fa-fw"></i>
+						ソフトウェア開発技術者 (現
+						応用情報技術者)
+						<small class="text-muted">Software Design &amp; Development Engineer (National examination)
+						</small>
+					</li>
+					<li class="list-group-item"><i class="license-icon fas fa-shield-alt fa-lg fa-fw"></i>
+						情報セキュリティスペシャリスト (現
 						情報処理安全確保支援士) <small class="text-muted">Information Security Specialist (National
 							examination)</small></li>
-					<li class="list-group-item"><i class="license fas fa-brain"></i> 日本メディカルAI学会公認
+					<li class="list-group-item"><i class="license-icon fas fa-brain fa-lg fa-fw"></i> 日本メディカルAI学会公認
 						機械学習・深層学習基礎コース/メディカルAI専門コース 修了 </li>
-					<li class="list-group-item"><i class="license fas fa-stethoscope"></i> 医師免許 <small
+					<li class="list-group-item"><i class="license-icon fas fa-stethoscope fa-lg fa-fw"></i> 医師免許 <small
 							class="text-muted">Medical license of Japan</small></li>
-					<li class="list-group-item"><i class="license fas fa-plus-square"></i> 公衆衛生学修士 <small
-							class="text-muted">Master of Public Health</small></li>
-					<li class="list-group-item"><i class="license fas fa-graduation-cap"></i> 医学博士 <small
-							class="text-muted">Doctor of Philosophy</small></li>
-					<li class="list-group-item"><i class="license fas fa-child"></i> 日本小児科学会 認定 小児科専門医・指導医
+					<li class="list-group-item"><i class="license-icon fas fa-plus-square fa-lg fa-fw"></i> 公衆衛生学修士
+						<small class="text-muted">Master of Public Health</small>
+					</li>
+					<li class="list-group-item"><i class="license-icon fas fa-graduation-cap fa-lg fa-fw"></i> 医学博士
+						<small class="text-muted">Doctor of Philosophy</small>
+					</li>
+					<li class="list-group-item"><i class="license-icon fas fa-child fa-lg fa-fw"></i> 日本小児科学会 認定
+						小児科専門医・指導医
 						<small class="text-muted">Japan Pediatric Society Board Certified Pediatrician, Instructor
 						</small>
 					</li>
-					<li class="list-group-item"><i class="license fas fa-diagnoses"></i> 日本アレルギー学会 アレルギー専門医 (小児科) <small
-							class="text-muted"> Japanese Society of Allergology Certified Specialist (Pediatrics)
-						</small></li>
+					<li class="list-group-item"><i class="license-icon fas fa-diagnoses fa-lg fa-fw"></i> 日本アレルギー学会
+						アレルギー専門医
+						(小児科)
+						<small class="text-muted"> Japanese Society of Allergology Certified Specialist (Pediatrics)
+						</small>
+					</li>
 				</ul>
 			</div>
 		</section>
@@ -147,7 +157,7 @@ mailto:abuse@hotmail.com
 			<div>
 				<div class="media-body">
 					<ul class="list-group list-group-flush">
-						<li class="list-group-item"><i class="publications fas fa-book"></i> <a
+						<li class="list-group-item"><i class="publication-icon fas fa-book"></i> <a
 								href="https://www.kcrt.net/ppr">Programmer's Pocket Reference</a> (技術書典7; <time
 								class="bday" datetime="2019-09-22">2019年9月22日</time>):
 							プログラマ向けの情報を集めた、A5サイズ約200ページのマニュアルです。</li>
@@ -172,17 +182,22 @@ mailto:abuse@hotmail.com
 			<h2><i class="fas fa-link"></i> リンク <small class="text-muted">Links</small></h2>
 			<div class="row">
 				<a class="btn btn-light col-sm-2" role="button" href="https://github.com/kcrt" title="github"><i
-						class="link fab fa-github"></i></a>
+						class="link-icon fab fa-github fa-3x"></i></a>
 				<a class="btn btn-light col-sm-2" role="button" href="https://www.npmjs.com/~kcrt" title="npm"><i
-						class="link fab fa-npm"></i></a>
+						class="link-icon fab fa-npm fa-3x"></i></a>
 				<a class="btn btn-light col-sm-2" role="button" href="http://ja.stackoverflow.com/users/6092/kcrt"
-					title="Stack overflow"><i class="link fab fa-stack-overflow"></i></a>
-				<a class="btn btn-light col-sm-2" role="button" href="http://twitter.com/kcrt" title="twitter"><i
-						class="link fab fa-twitter"></i></a>
+					title="Stack overflow"><i class="link-icon fab fa-stack-overflow fa-3x"></i></a>
+				<a class="btn btn-light col-sm-2" role="button" href="http://twitter.com/kcrt" title="twitter">
+					<span class="fa-layers fa-lg fa-fw fa-3x">
+						<i class="link-icon fab fa-twitter"></i>
+						<span class="fa-layers-counter fa-layers-bottom-right" id="twitter-tomb"
+							style="background: none;">🪦</span>
+					</span>
+				</a>
 				<a class="btn btn-light col-sm-2" role="button" href="http://tumblr.kcrt.net/" title="tumblr"><i
-						class="link fab fa-tumblr"></i></a>
+						class="link-icon fab fa-tumblr fa-3x"></i></a>
 				<a class="btn btn-light col-sm-2" role="button" href="http://www.youtube.com/profile?user=kcrt"
-					title="YouTube"><i class="link fab fa-youtube"></i></a>
+					title="YouTube"><i class="link-icon fab fa-youtube fa-3x"></i></a>
 			</div>
 		</section>
 		<footer id="footer">
