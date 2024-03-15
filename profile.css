@@ -83,6 +83,7 @@ span.keyinfo {
 	font-family: monospace;
 	font-size: xx-small;
 	color: #888;
+	overflow-wrap: break-word;
 }
 
 span.activeinfo {
@@ -91,4 +92,8 @@ span.activeinfo {
 
 span.highlight {
 	background-color: var(--highlightColor);
+}
+
+img.icon-shadow {
+	box-shadow: .3rem .3rem 1rem var(--highlightColor) !important;
 }
