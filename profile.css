@@ -4,6 +4,7 @@
 	--linkColor: #488DC7;
 	--highlightColor: yellow;
 	--lineColor: #488DC7;
+	--iconShadowColor: #222222;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -13,6 +14,7 @@
 		--linkColor: #cc8888;
 		--highlightColor: #660;
 		--lineColor: #cccc33;
+		--iconShadowColor: yellow;
 	}
 }
 
@@ -95,5 +97,5 @@ span.highlight {
 }
 
 img.icon-shadow {
-	box-shadow: .3rem .3rem 1rem var(--highlightColor) !important;
+	box-shadow: .3rem .3rem 1rem var(--iconShadowColor) !important;
 }
