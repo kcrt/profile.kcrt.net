@@ -16,10 +16,10 @@
 	// Content-Length values, which can't be compared with the decompressed bytes we receive.
 	// Update them when secret/three/ is re-vendored (the game files are rough estimates).
 	const GAME_FILES = [
-		{ url: "./secret/breakout.js", bytes: 81000 },
-		{ url: "./secret/breakout.css", bytes: 3000 },
+		{ url: "./secret/breakout.js", bytes: 94000 },
+		{ url: "./secret/breakout.css", bytes: 6500 },
 		{ url: "./secret/stages.js", bytes: 7000 },
-		{ url: "./secret/sound.js", bytes: 10000 },
+		{ url: "./secret/sound.js", bytes: 13500 },
 		{ url: "./secret/icon-textures.js", bytes: 2200 },
 		{ url: "./secret/gamepad.js", bytes: 2000 },
 		{ url: "./secret/three/build/three.webgpu.js", bytes: 1350894 },
