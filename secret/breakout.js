@@ -6,6 +6,7 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ICE_BRICK_ITEMS, ITEMS, ITEM_TYPES, ROW_COUNT, STAGES, expandStage } from "./stages.js";
 import { SoundEngine } from "./sound.js";
 import { loadIconTextures } from "./icon-textures.js";
+import { GamepadInput } from "./gamepad.js";
 
 // The player is a white blood cell (the profile photo in a glass bubble) travelling through
 // the body. The ball falls under gravity and is kept alive with the paddle; the camera follows
@@ -71,6 +72,10 @@ const ANTIBODY_HALF_WIDTH = ANTIBODY_ARM_TIP.x + ANTIBODY_TIP_RADIUS;
 const ANTIBODY_TOP = ANTIBODY_ARM_TIP.y + ANTIBODY_TIP_RADIUS;
 // Entering the Konami code while paused turns on MAX POWER (every power-up, for the rest of the run).
 const KONAMI_CODE = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+// B and A sit in swapped positions on Nintendo-style controllers, so either order is accepted.
+const KONAMI_CODES = [KONAMI_CODE, [...KONAMI_CODE.slice(0, -2), "a", "b"]];
+// Gamepad buttons used in the Konami code, named like the keys (face buttons by their Xbox labels).
+const GAMEPAD_CHEAT_KEYS = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight", faceRight: "b", faceBottom: "a" };
 const MAX_POWER_EFFECT_TIME = 99;
 const INITIAL_LIVES = 5;
 const MAX_LIVES = 7;
@@ -258,6 +263,10 @@ class BreakoutGame {
 		this.messageBeforePause = "";
 		this.recentPausedKeys = [];
 		this.isMaxPower = false;
+
+		this.gamepad = new GamepadInput();
+		this.gamepadMove = 0;
+		this.isGamepadConnected = false;
 
 		this.balls = [];
 		this.ballIntroFrom = new THREE.Vector3();
@@ -1031,7 +1040,7 @@ class BreakoutGame {
 				this.togglePause();
 			} else if (IS_LOCAL_DEVELOPMENT && /^[1-9]$/.test(event.key) && Number(event.key) <= STAGES.length) {
 				this.jumpToStage(Number(event.key) - 1);
-			} else if (this.isPaused && this.handlePausedKey(event)) {
+			} else if (this.isPaused && this.handlePausedInput(event.key.length === 1 ? event.key.toLowerCase() : event.key)) {
 				event.preventDefault();
 			} else if (event.key === " " || event.key === "Enter") {
 				event.preventDefault();
@@ -1184,7 +1193,7 @@ class BreakoutGame {
 	}
 
 	showPausedMessage() {
-		this.setMessage(`PAUSED${this.isMaxPower ? "\n★ MAX POWER ★" : ""}\nP / ⏸ to resume`);
+		this.setMessage(`PAUSED${this.isMaxPower ? "\n★ MAX POWER ★" : ""}\n${this.isGamepadConnected ? "Start" : "P / ⏸"} to resume`);
 	}
 
 	updatePauseButton() {
@@ -1193,16 +1202,17 @@ class BreakoutGame {
 	}
 
 	/**
-	 * Keys pressed while paused are checked for the Konami code.
+	 * Keys (and gamepad buttons) pressed while paused are checked for the Konami code.
+	 * @param {string} key - a key name such as "ArrowUp" or a lower-case letter
 	 * @returns {boolean} true when the key was used here (and must not reach the game)
 	 */
-	handlePausedKey(event) {
-		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+	handlePausedInput(key) {
 		if (!KONAMI_CODE.includes(key)) {
 			return false;
 		}
 		this.recentPausedKeys = [...this.recentPausedKeys, key].slice(-KONAMI_CODE.length);
-		if (this.recentPausedKeys.join() === KONAMI_CODE.join()) {
+		const entered = this.recentPausedKeys.join();
+		if (KONAMI_CODES.some((code) => code.join() === entered)) {
 			this.recentPausedKeys = [];
 			this.activateMaxPower();
 		}
@@ -1301,7 +1311,11 @@ class BreakoutGame {
 			case "ready":
 				this.setMessage(
 					`${this.stage.boss ? "Defeat the mast cell and reach the gate" : "Carry the ball to the lymph node gate"} ➜\n` +
-						(isTouch ? "Tap to launch" : "Click / Space to launch\nP to pause · M to mute · Esc to exit"),
+						(this.isGamepadConnected
+							? "Ⓐ to launch · Start to pause"
+							: isTouch
+								? "Tap to launch"
+								: "Click / Space to launch\nP to pause · M to mute · Esc to exit"),
 				);
 				break;
 			case "playing":
@@ -1390,6 +1404,7 @@ class BreakoutGame {
 		const now = performance.now();
 		const deltaTime = Math.min((now - this.lastFrameTime) / 1000, 1 / 30);
 		this.lastFrameTime = now;
+		this.pollGamepad();
 		if (this.isPaused) {
 			this.pipeline.render();
 			return;
@@ -1437,6 +1452,28 @@ class BreakoutGame {
 		this.updateEffectsLabel();
 	}
 
+	/** Gamepad: stick / D-pad move the paddle, the bottom face button acts, Start pauses. */
+	pollGamepad() {
+		const { isConnected, move, justPressed } = this.gamepad.poll();
+		this.isGamepadConnected = isConnected;
+		this.gamepadMove = this.isPaused ? 0 : move;
+		if (move !== 0) {
+			this.pointerClient = null;
+		}
+		if (justPressed.has("start")) {
+			this.togglePause();
+		} else if (this.isPaused) {
+			for (const button of justPressed) {
+				const key = GAMEPAD_CHEAT_KEYS[button];
+				if (key) {
+					this.handlePausedInput(key);
+				}
+			}
+		} else if (justPressed.has("faceBottom")) {
+			this.handleAction();
+		}
+	}
+
 	updatePaddle(deltaTime) {
 		if (this.pointerClient) {
 			this.paddleTargetX = this.screenToField(this.pointerClient.x, this.pointerClient.y).x;
@@ -1447,6 +1484,7 @@ class BreakoutGame {
 		if (this.keysHeld.has("ArrowRight")) {
 			this.paddleTargetX += PADDLE_KEYBOARD_SPEED * deltaTime;
 		}
+		this.paddleTargetX += this.gamepadMove * PADDLE_KEYBOARD_SPEED * deltaTime;
 		const sizeFactor = (this.wideTime > 0 ? WIDE_FACTOR : 1) * (this.itchTime > 0 ? ITCH_FACTOR : 1);
 		this.paddleWidth = THREE.MathUtils.damp(this.paddleWidth, PADDLE_WIDTH * sizeFactor, 8, deltaTime);
 
