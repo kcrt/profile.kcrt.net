@@ -6,13 +6,14 @@ import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 import { ICE_BRICK_ITEMS, ITEMS, ITEM_TYPES, ROW_COUNT, STAGES, expandStage } from "./stages.js";
 import { SoundEngine } from "./sound.js";
 import { loadIconTextures } from "./icon-textures.js";
+import { GamepadInput } from "./gamepad.js";
 
 // The player is a white blood cell (the profile photo in a glass bubble) travelling through
 // the body. The ball falls under gravity and is kept alive with the paddle; the camera follows
 // the ball to the right until it reaches the lymph node gate at the end of the stage.
 
 // ---------- Tunables ----------
-// World: x grows to the right (0 = start of the stage, 1 unit = 1 level cell), y = 0 is the rail.
+// World: x grows to the right (0 = start of the stage, 1 unit = 1 level cell), y = 0 is the paddle.
 const BRICK_BOTTOM_Y = 1.5; // center of the lowest brick row
 const CEILING_Y = BRICK_BOTTOM_Y + ROW_COUNT - 0.2;
 const VIEW_BOTTOM_Y = -1.6;
@@ -71,11 +72,16 @@ const ANTIBODY_HALF_WIDTH = ANTIBODY_ARM_TIP.x + ANTIBODY_TIP_RADIUS;
 const ANTIBODY_TOP = ANTIBODY_ARM_TIP.y + ANTIBODY_TIP_RADIUS;
 // Entering the Konami code while paused turns on MAX POWER (every power-up, for the rest of the run).
 const KONAMI_CODE = ["ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown", "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight", "b", "a"];
+// B and A sit in swapped positions on Nintendo-style controllers, so either order is accepted.
+const KONAMI_CODES = [KONAMI_CODE, [...KONAMI_CODE.slice(0, -2), "a", "b"]];
+// Gamepad buttons used in the Konami code, named like the keys (face buttons by their Xbox labels).
+const GAMEPAD_CHEAT_KEYS = { up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight", faceRight: "b", faceBottom: "a" };
 const MAX_POWER_EFFECT_TIME = 99;
 const INITIAL_LIVES = 5;
 const MAX_LIVES = 7;
 
 const GOAL_DISTANCE_FROM_END = 3;
+const DEADLINE_DASH_SPACING = 1;
 const EPILOGUE_TEXT_WIDTH = 22;
 // The message is right-aligned so its "!" ends just left of the start wall: with the camera at
 // the start, the edge of the screen shows a sliver of it as a hint for sharp-eyed players.
@@ -258,6 +264,10 @@ class BreakoutGame {
 		this.messageBeforePause = "";
 		this.recentPausedKeys = [];
 		this.isMaxPower = false;
+
+		this.gamepad = new GamepadInput();
+		this.gamepadMove = 0;
+		this.isGamepadConnected = false;
 
 		this.balls = [];
 		this.ballIntroFrom = new THREE.Vector3();
@@ -463,7 +473,7 @@ class BreakoutGame {
 		this.createPipeline();
 	}
 
-	/** (Re)creates everything that belongs to the current stage: bricks, rail, gate and backdrop. */
+	/** (Re)creates everything that belongs to the current stage: bricks, deadline, gate and backdrop. */
 	buildStage() {
 		for (const brick of this.bricks) {
 			this.scene.remove(brick.mesh);
@@ -501,7 +511,7 @@ class BreakoutGame {
 		});
 
 		this.createBackdrop();
-		this.createRail();
+		this.createDeadline();
 		this.createGate();
 		this.resetBoss();
 	}
@@ -588,15 +598,27 @@ class BreakoutGame {
 		this.leftBoundX = -this.stage.epilogue.width;
 	}
 
-	/** The glowing rail the paddle runs on, along the whole stage. */
-	createRail() {
+	/**
+	 * A dim red dashed line under the paddle: below it the ball is lost. It is kept dark and
+	 * dashed so it can't be mistaken for the (bright, solid) guard.
+	 */
+	createDeadline() {
 		const startX = -(this.stage.epilogue?.width ?? 0);
-		const rail = new THREE.Mesh(
-			new THREE.BoxGeometry(this.levelWidth - startX, 0.08, 0.3),
-			new THREE.MeshStandardMaterial({ color: 0x112233, emissive: 0x66ccff, emissiveIntensity: 1.2, transparent: true, opacity: 0.8 }),
+		const dashCount = Math.ceil((this.levelWidth - startX) / DEADLINE_DASH_SPACING);
+		const deadline = new THREE.InstancedMesh(
+			new THREE.BoxGeometry(DEADLINE_DASH_SPACING * 0.5, 0.05, 0.05),
+			new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff4466).multiplyScalar(0.55), transparent: true, opacity: 0.6, depthWrite: false }),
+			dashCount,
 		);
-		rail.position.set((startX + this.levelWidth) / 2, PADDLE_Y - PADDLE_HEIGHT / 2 - 0.25, 0);
-		this.levelGroup.add(rail);
+		// The shared dummy may still hold the rotation / scale of the last shard.
+		this.dummy.rotation.set(0, 0, 0);
+		this.dummy.scale.setScalar(1);
+		for (let index = 0; index < dashCount; index++) {
+			this.dummy.position.set(startX + (index + 0.5) * DEADLINE_DASH_SPACING, PADDLE_Y - PADDLE_HEIGHT / 2 - 0.25, 0);
+			this.dummy.updateMatrix();
+			deadline.setMatrixAt(index, this.dummy.matrix);
+		}
+		this.levelGroup.add(deadline);
 	}
 
 	/** The lymph node gate at the end of the stage, with a barrier while the boss is alive. */
@@ -1031,7 +1053,7 @@ class BreakoutGame {
 				this.togglePause();
 			} else if (IS_LOCAL_DEVELOPMENT && /^[1-9]$/.test(event.key) && Number(event.key) <= STAGES.length) {
 				this.jumpToStage(Number(event.key) - 1);
-			} else if (this.isPaused && this.handlePausedKey(event)) {
+			} else if (this.isPaused && this.handlePausedInput(event.key.length === 1 ? event.key.toLowerCase() : event.key)) {
 				event.preventDefault();
 			} else if (event.key === " " || event.key === "Enter") {
 				event.preventDefault();
@@ -1184,7 +1206,7 @@ class BreakoutGame {
 	}
 
 	showPausedMessage() {
-		this.setMessage(`PAUSED${this.isMaxPower ? "\n★ MAX POWER ★" : ""}\nP / ⏸ to resume`);
+		this.setMessage(`PAUSED${this.isMaxPower ? "\n★ MAX POWER ★" : ""}\n${this.isGamepadConnected ? "Start" : "P / ⏸"} to resume`);
 	}
 
 	updatePauseButton() {
@@ -1193,16 +1215,17 @@ class BreakoutGame {
 	}
 
 	/**
-	 * Keys pressed while paused are checked for the Konami code.
+	 * Keys (and gamepad buttons) pressed while paused are checked for the Konami code.
+	 * @param {string} key - a key name such as "ArrowUp" or a lower-case letter
 	 * @returns {boolean} true when the key was used here (and must not reach the game)
 	 */
-	handlePausedKey(event) {
-		const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+	handlePausedInput(key) {
 		if (!KONAMI_CODE.includes(key)) {
 			return false;
 		}
 		this.recentPausedKeys = [...this.recentPausedKeys, key].slice(-KONAMI_CODE.length);
-		if (this.recentPausedKeys.join() === KONAMI_CODE.join()) {
+		const entered = this.recentPausedKeys.join();
+		if (KONAMI_CODES.some((code) => code.join() === entered)) {
 			this.recentPausedKeys = [];
 			this.activateMaxPower();
 		}
@@ -1301,7 +1324,11 @@ class BreakoutGame {
 			case "ready":
 				this.setMessage(
 					`${this.stage.boss ? "Defeat the mast cell and reach the gate" : "Carry the ball to the lymph node gate"} ➜\n` +
-						(isTouch ? "Tap to launch" : "Click / Space to launch\nP to pause · M to mute · Esc to exit"),
+						(this.isGamepadConnected
+							? "Ⓐ to launch · Start to pause"
+							: isTouch
+								? "Tap to launch"
+								: "Click / Space to launch\nP to pause · M to mute · Esc to exit"),
 				);
 				break;
 			case "playing":
@@ -1390,6 +1417,7 @@ class BreakoutGame {
 		const now = performance.now();
 		const deltaTime = Math.min((now - this.lastFrameTime) / 1000, 1 / 30);
 		this.lastFrameTime = now;
+		this.pollGamepad();
 		if (this.isPaused) {
 			this.pipeline.render();
 			return;
@@ -1437,6 +1465,28 @@ class BreakoutGame {
 		this.updateEffectsLabel();
 	}
 
+	/** Gamepad: stick / D-pad move the paddle, the bottom face button acts, Start pauses. */
+	pollGamepad() {
+		const { isConnected, move, justPressed } = this.gamepad.poll();
+		this.isGamepadConnected = isConnected;
+		this.gamepadMove = this.isPaused ? 0 : move;
+		if (move !== 0) {
+			this.pointerClient = null;
+		}
+		if (justPressed.has("start")) {
+			this.togglePause();
+		} else if (this.isPaused) {
+			for (const button of justPressed) {
+				const key = GAMEPAD_CHEAT_KEYS[button];
+				if (key) {
+					this.handlePausedInput(key);
+				}
+			}
+		} else if (justPressed.has("faceBottom")) {
+			this.handleAction();
+		}
+	}
+
 	updatePaddle(deltaTime) {
 		if (this.pointerClient) {
 			this.paddleTargetX = this.screenToField(this.pointerClient.x, this.pointerClient.y).x;
@@ -1447,6 +1497,7 @@ class BreakoutGame {
 		if (this.keysHeld.has("ArrowRight")) {
 			this.paddleTargetX += PADDLE_KEYBOARD_SPEED * deltaTime;
 		}
+		this.paddleTargetX += this.gamepadMove * PADDLE_KEYBOARD_SPEED * deltaTime;
 		const sizeFactor = (this.wideTime > 0 ? WIDE_FACTOR : 1) * (this.itchTime > 0 ? ITCH_FACTOR : 1);
 		this.paddleWidth = THREE.MathUtils.damp(this.paddleWidth, PADDLE_WIDTH * sizeFactor, 8, deltaTime);
 
