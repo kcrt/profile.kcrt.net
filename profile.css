@@ -1,18 +1,10 @@
 :root {
-	--backgroundColor: #ffffff;
-	--textColor: #222222;
-	--linkColor: #488DC7;
-	--highlightColor: yellow;
 	--lineColor: #488DC7;
 	--iconShadowColor: #222222;
 }
 
 @media (prefers-color-scheme: dark) {
 	:root {
-		--backgroundColor: #222222;
-		--textColor: #ffffff;
-		--linkColor: #cc8888;
-		--highlightColor: #660;
 		--lineColor: #cccc33;
 		--iconShadowColor: yellow;
 	}
@@ -21,55 +13,44 @@
 
 body {
 	font-family: "Myriad Pro", "MyriadPro", "Helvetica Neue", "M PLUS Rounded 1c", "游ゴシック", "YuGothic", "Hiragino Kaku Gothic ProN", "Hiragino Kaku Gothic Pro", Meiryo, -apple-system, BlinkMacSystemFont, sans-serif;
-	background-color: var(--backgroundColor);
-	color: var(--textColor);
-}
-
-a {
-	color: var(--linkColor);
-}
-
-.vcard rt {
-	font-size: 0.5em;
-}
-
-/* for bootstrap */
-li.list-group-item {
-	background-color: var(--backgroundColor);
-	color: var(--textColor);
 }
 
 section>h2 {
+	padding-bottom: .25rem;
 	border-bottom: dashed 1px var(--lineColor);
-}
-
-section:before {
-	padding-top: 70px;
-	content: "";
-	display: block;
 }
 
 section#me {
 	padding: 32px;
 	border-radius: 34px;
-	background: var(--backgroundColor);
+	background: var(--nano-bg);
 	box-shadow: 12px 12px 24px #c5c5c5,
 		-12px -12px 24px #ffffff;
 }
 
+.photo-column {
+	padding: 32px;
+}
+
 .license-icon {
 	font-size: 1.5em;
-	color: var(--linkColor);
+	color: var(--nano-accent);
 }
 
 .publication-icon {
 	font-size: 1.5em;
-	color: var(--linkColor);
+	color: var(--nano-accent);
 	width: 1.2em;
 }
 
+#links .button {
+	flex: 1 1 6rem;
+	padding: .75rem;
+	background-color: var(--nano-bg);
+}
+
 .link-icon {
-	color: var(--linkColor);
+	color: var(--nano-accent);
 }
 
 #twitter-tomb {
@@ -77,12 +58,8 @@ section#me {
 	padding: 0.4em .2em 0.1em 0.4em;
 }
 
-a.btn {
-	background-color: var(--backgroundColor);
-}
-
 footer>hr {
-	background-color: var(--linkColor);
+	border-top-color: var(--nano-accent);
 }
 
 span.keyinfo {
@@ -93,13 +70,13 @@ span.keyinfo {
 }
 
 span.activeinfo {
-	color: var(--linkColor);
+	color: var(--nano-accent);
 }
 
 span.highlight {
-	background-color: var(--highlightColor);
+	background-color: var(--nano-highlight);
 }
 
 img.icon-shadow {
-	box-shadow: .3rem .3rem 1rem var(--iconShadowColor) !important;
+	box-shadow: .3rem .3rem 1rem var(--iconShadowColor);
 }

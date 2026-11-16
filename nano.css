@@ -1,0 +1,389 @@
+/*! nano.css — a tiny, mostly classless stylesheet by kcrt | MIT License */
+
+/* ---------- Theme ---------- */
+:root {
+	color-scheme: light dark;
+	--nano-bg: #ffffff;
+	--nano-surface: #f4f5f7;
+	--nano-text: #222222;
+	--nano-muted: #6c757d;
+	--nano-accent: #488dc7;
+	--nano-border: rgba(0, 0, 0, .125);
+	--nano-highlight: #ffff66;
+	--nano-radius: .375rem;
+	--nano-max-width: 1140px;
+	--nano-navbar-height: 3.5rem;
+	--nano-font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN", "Hiragino Sans", "游ゴシック", "YuGothic", Meiryo, sans-serif;
+	--nano-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root {
+		--nano-bg: #222222;
+		--nano-surface: #2d2d2d;
+		--nano-text: #f2f2f2;
+		--nano-muted: #a0a0a0;
+		--nano-accent: #cc8888;
+		--nano-border: rgba(255, 255, 255, .15);
+		--nano-highlight: #666600;
+	}
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+	text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	font-family: var(--nano-font);
+	line-height: 1.6;
+	color: var(--nano-text);
+	background-color: var(--nano-bg);
+	overflow-wrap: break-word;
+}
+
+main,
+.container {
+	max-width: var(--nano-max-width);
+	margin-inline: auto;
+	padding-inline: 1rem;
+}
+
+section {
+	margin-block: 2.5rem;
+}
+
+/* ---------- Typography ---------- */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin: 1.5em 0 .5em;
+	font-weight: 600;
+	line-height: 1.25;
+}
+
+:is(h1, h2, h3, h4, h5, h6):first-child {
+	margin-top: 0;
+}
+
+h1 {
+	font-size: 2.25rem;
+}
+
+h2 {
+	font-size: 1.75rem;
+}
+
+h3 {
+	font-size: 1.375rem;
+}
+
+h4 {
+	font-size: 1.125rem;
+}
+
+h5,
+h6 {
+	font-size: 1rem;
+}
+
+:is(h1, h2, h3, h4, h5, h6) small {
+	font-size: .65em;
+	font-weight: 400;
+	color: var(--nano-muted);
+}
+
+p,
+ul,
+ol,
+dl,
+pre,
+table,
+blockquote,
+figure {
+	margin: 0 0 1rem;
+}
+
+a {
+	color: var(--nano-accent);
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+small {
+	font-size: .875em;
+}
+
+mark {
+	background-color: var(--nano-highlight);
+	color: inherit;
+}
+
+rt {
+	font-size: .5em;
+}
+
+hr {
+	margin: 2rem 0;
+	border: 0;
+	border-top: 1px solid var(--nano-border);
+}
+
+blockquote {
+	padding-left: 1rem;
+	border-left: 4px solid var(--nano-accent);
+	color: var(--nano-muted);
+}
+
+code,
+kbd,
+pre,
+samp {
+	font-family: var(--nano-mono);
+	font-size: .9em;
+}
+
+code,
+kbd {
+	padding: .1em .35em;
+	border-radius: var(--nano-radius);
+	background-color: var(--nano-surface);
+}
+
+pre {
+	padding: 1rem;
+	overflow-x: auto;
+	border-radius: var(--nano-radius);
+	background-color: var(--nano-surface);
+}
+
+pre code {
+	padding: 0;
+	font-size: inherit;
+	background: none;
+}
+
+img,
+video {
+	max-width: 100%;
+	height: auto;
+}
+
+table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+th,
+td {
+	padding: .5rem .75rem;
+	border-bottom: 1px solid var(--nano-border);
+	text-align: left;
+}
+
+/* ---------- Forms & buttons ---------- */
+button,
+input,
+select,
+textarea {
+	font: inherit;
+	color: inherit;
+}
+
+input:not([type="checkbox"], [type="radio"], [type="range"]),
+select,
+textarea {
+	padding: .4rem .6rem;
+	border: 1px solid var(--nano-border);
+	border-radius: var(--nano-radius);
+	background-color: var(--nano-bg);
+}
+
+button,
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: .5em;
+	padding: .5rem 1rem;
+	border: 1px solid var(--nano-border);
+	border-radius: var(--nano-radius);
+	background-color: var(--nano-surface);
+	color: var(--nano-text);
+	text-decoration: none;
+	cursor: pointer;
+	transition: background-color .15s;
+}
+
+button:hover,
+.button:hover {
+	background-color: color-mix(in srgb, var(--nano-surface), var(--nano-text) 8%);
+	text-decoration: none;
+}
+
+.buttons {
+	display: flex;
+	flex-wrap: wrap;
+	gap: .5rem;
+}
+
+:focus-visible {
+	outline: 2px solid var(--nano-accent);
+	outline-offset: 2px;
+}
+
+/* ---------- Components ---------- */
+
+/* Fixed top navigation bar. Markup:
+	<header class="navbar">
+		<a class="navbar-brand" href="#">Brand</a>
+		<input type="checkbox" id="navbar-toggle" class="navbar-toggle" aria-label="Toggle navigation">
+		<label for="navbar-toggle" class="navbar-burger">☰</label>
+		<nav class="navbar-menu"><a href="#a">A</a> ...</nav>
+	</header>
+*/
+.navbar {
+	position: fixed;
+	inset: 0 0 auto;
+	z-index: 30;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: .25rem 1.5rem;
+	min-height: var(--nano-navbar-height);
+	padding: .5rem 1rem;
+	border-bottom: 1px solid var(--nano-border);
+	background-color: var(--nano-surface);
+}
+
+body:has(> .navbar) {
+	padding-top: var(--nano-navbar-height);
+}
+
+html:has(.navbar) {
+	scroll-padding-top: calc(var(--nano-navbar-height) + 1rem);
+}
+
+.navbar-brand {
+	font-size: 1.25rem;
+	font-weight: 600;
+	color: var(--nano-text);
+}
+
+.navbar-menu {
+	display: flex;
+	gap: 1.25rem;
+}
+
+.navbar-menu a {
+	color: var(--nano-muted);
+}
+
+.navbar-menu a:hover {
+	color: var(--nano-text);
+	text-decoration: none;
+}
+
+.navbar-toggle {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.navbar-burger {
+	display: none;
+	margin-left: auto;
+	padding: .25rem .75rem;
+	border: 1px solid var(--nano-border);
+	border-radius: var(--nano-radius);
+	font-size: 1.25rem;
+	cursor: pointer;
+}
+
+.navbar-toggle:focus-visible+.navbar-burger {
+	outline: 2px solid var(--nano-accent);
+	outline-offset: 2px;
+}
+
+@media (max-width: 991.98px) {
+	.navbar-burger {
+		display: block;
+	}
+
+	.navbar-menu {
+		display: none;
+		flex-basis: 100%;
+		flex-direction: column;
+		gap: .5rem;
+		padding-block: .5rem;
+	}
+
+	.navbar-toggle:checked~.navbar-menu {
+		display: flex;
+	}
+}
+
+/* Side-by-side columns; stacked on narrow screens */
+.columns {
+	display: flex;
+	gap: 1.5rem;
+	align-items: center;
+}
+
+.columns>* {
+	flex: 1 1 0;
+	min-width: 0;
+}
+
+.columns>.column-narrow {
+	flex: 0 0 auto;
+}
+
+@media (max-width: 767.98px) {
+	.columns {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}
+
+/* List with separators between items */
+.list {
+	padding: 0;
+	list-style: none;
+}
+
+.list>li {
+	padding: .75rem 1.25rem;
+	border-bottom: 1px solid var(--nano-border);
+}
+
+.list>li:last-child {
+	border-bottom: 0;
+}
+
+/* ---------- Utilities ---------- */
+.muted {
+	color: var(--nano-muted);
+}
+
+.circle {
+	border-radius: 50%;
+}
+
+.text-center {
+	text-align: center;
+}
