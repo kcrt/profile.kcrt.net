@@ -129,6 +129,28 @@ img.photo.secret-heartbeat {
 	}
 }
 
+/* A game controller is around: the photo glows softly, as if it is waiting for a button */
+img.photo.secret-gamepad-ready {
+	animation: secret-gamepad-glow 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes secret-gamepad-glow {
+	from {
+		box-shadow: 0 0 .3rem .05rem rgba(120, 200, 255, .35);
+	}
+
+	to {
+		box-shadow: 0 0 .9rem .3rem rgba(150, 215, 255, .8), 0 0 2rem .6rem rgba(120, 200, 255, .3);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	img.photo.secret-gamepad-ready {
+		animation: none;
+		box-shadow: 0 0 .8rem .25rem rgba(150, 215, 255, .7);
+	}
+}
+
 img.photo.secret-charging {
 	transition: transform 1.2s cubic-bezier(.2, .8, .2, 1);
 	animation: secret-glow .5s ease-in-out infinite alternate;

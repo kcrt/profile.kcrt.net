@@ -5,6 +5,8 @@
 // loads and starts the hidden side-scrolling breakout game. The photo grows with every click, then glows
 // while a loading bar shows the download / startup progress.
 // As a hint, the photo gives a little heartbeat every 10–30 seconds.
+// Once a game controller shows up (browsers reveal one only after a button press on this page),
+// the photo glows instead, and any controller button counts as a click.
 (() => {
 	const REQUIRED_CLICKS = 10;
 	const RESET_DELAY_MS = 2000;
@@ -32,6 +34,7 @@
 	const IMPORT_SHARE = 0.05;
 	const HEARTBEAT_MIN_DELAY_MS = 10000;
 	const HEARTBEAT_MAX_DELAY_MS = 30000;
+	const GAMEPAD_READY_CLASS = "secret-gamepad-ready";
 
 	const photo = document.querySelector("img.photo");
 	if (!(photo instanceof HTMLImageElement)) {
@@ -154,7 +157,7 @@
 	const scheduleHeartbeat = () => {
 		const delay = HEARTBEAT_MIN_DELAY_MS + Math.random() * (HEARTBEAT_MAX_DELAY_MS - HEARTBEAT_MIN_DELAY_MS);
 		setTimeout(() => {
-			const isIdle = !isRunning && clickCount === 0 && !document.hidden;
+			const isIdle = !isRunning && clickCount === 0 && !document.hidden && !photo.classList.contains(GAMEPAD_READY_CLASS);
 			if (isIdle && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
 				photo.classList.add("secret-heartbeat");
 			}
@@ -168,7 +171,7 @@
 	});
 	scheduleHeartbeat();
 
-	photo.addEventListener("click", () => {
+	const registerClick = () => {
 		if (isRunning) {
 			return;
 		}
@@ -180,5 +183,43 @@
 			return;
 		}
 		resetTimer = setTimeout(() => setClickCount(0), RESET_DELAY_MS);
+	};
+	photo.addEventListener("click", registerClick);
+
+	const connectedGamepads = () => (navigator.getGamepads?.() ?? []).filter((pad) => pad !== null && pad.connected);
+
+	/** "padIndex:buttonIndex" of the buttons held in the previous frame, so a held button counts once. */
+	let previouslyPressedButtons = new Set();
+	let isPollingGamepads = false;
+
+	const pollGamepads = () => {
+		const pads = connectedGamepads();
+		const pressedButtons = new Set(
+			pads.flatMap((pad) => pad.buttons.flatMap((button, index) => (button.pressed ? [`${pad.index}:${index}`] : []))),
+		);
+		// While the game runs it reads the controllers itself.
+		const hasNewPress = [...pressedButtons].some((button) => !previouslyPressedButtons.has(button));
+		if (hasNewPress && !isRunning) {
+			registerClick();
+		}
+		previouslyPressedButtons = pressedButtons;
+		isPollingGamepads = pads.length > 0;
+		if (isPollingGamepads) {
+			requestAnimationFrame(pollGamepads);
+		}
+	};
+
+	window.addEventListener("gamepadconnected", () => {
+		photo.classList.remove("secret-heartbeat");
+		photo.classList.add(GAMEPAD_READY_CLASS);
+		if (!isPollingGamepads) {
+			isPollingGamepads = true;
+			requestAnimationFrame(pollGamepads);
+		}
+	});
+	window.addEventListener("gamepaddisconnected", () => {
+		if (connectedGamepads().length === 0) {
+			photo.classList.remove(GAMEPAD_READY_CLASS);
+		}
 	});
 })();

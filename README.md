@@ -11,7 +11,7 @@ Source of <https://profile.kcrt.net/>, a static single page served by GitHub Pag
 | `profile.css` | Site-specific styles |
 | `icons.svg` | SVG sprite of the Font Awesome Free icons used in the page |
 | `scripts/build_icons.py` | Regenerates `icons.svg` from the `icons.svg#<name>` references in `index.html` |
-| `secret.js` / `secret/` | Hidden mode (click the profile photo 10 times): a side-scrolling 3D breakout through the body — carry the ball (a white blood cell) past food allergens and tissue walls to the lymph node gate; the last stage has a mast cell boss. Levels are built from chunks in `secret/stages.js`. Playable with mouse, touch, keyboard or a gamepad. Starting and clearing the game are counted by requesting `https://link.kcrt.net/profile-kcrt-net-enter-game` / `-clear-game` (skipped on localhost) |
+| `secret.js` / `secret/` | Hidden mode (click the profile photo 10 times, or press any gamepad button 10 times; the photo glows once a gamepad is detected): a side-scrolling 3D breakout through the body — carry the ball (a white blood cell) past food allergens and tissue walls to the lymph node gate; the last stage has a mast cell boss. Levels are built from chunks in `secret/stages.js`. Playable with mouse, touch, keyboard or a gamepad. Starting and clearing the game are counted by requesting `https://link.kcrt.net/profile-kcrt-net-enter-game` / `-clear-game` (skipped on localhost) |
 
 ## Development
 
