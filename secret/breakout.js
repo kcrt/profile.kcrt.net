@@ -80,6 +80,38 @@ const MAX_POWER_EFFECT_TIME = 99;
 const INITIAL_LIVES = 5;
 const MAX_LIVES = 7;
 
+// Coins burst out of broken bricks and fly into the paddle; every 100 coins give a life.
+const COIN_POOL_SIZE = 260;
+const COIN_RADIUS = 0.2;
+const COIN_SCATTER_TIME = 0.35; // seconds of free flight before homing in on the paddle
+const COIN_HOMING_SPEED = 10;
+const COIN_SCORE = 5;
+const COINS_PER_EXTRA_LIFE = 100;
+const COIN_SOUND_INTERVAL_MS = 45;
+/** @type {Record<string, number>} */
+const COINS_PER_BRICK = { allergen: 2, armored: 4, ice: 2 };
+// Rare golden bricks: every hit spurts coins, and breaking one is a JACKPOT.
+const GOLDEN_BRICK_CHANCE = 0.015;
+const GOLDEN_HIT_POINTS = 3;
+const GOLDEN_COINS_PER_HIT = 6;
+const JACKPOT_COINS = 40;
+const JACKPOT_SCORE = 2000;
+const GOLDEN_EMOJI = "💰";
+const GOLDEN_SPARKLE_COLOR = new THREE.Color(0xfff2b0);
+
+// Combo tiers: announced when reached, and the screen edge glows while the combo lasts.
+const COMBO_TIERS = [
+	{ combo: 4, label: "GOOD", color: "#7dff9b" },
+	{ combo: 8, label: "GREAT!", color: "#66ccff" },
+	{ combo: 12, label: "EXCELLENT!", color: "#ffd966" },
+	{ combo: 20, label: "INSANE!!", color: "#ff66dd" },
+];
+const MAX_SCORE_POPUPS = 40;
+
+// Hit stop: the game freezes for a moment on heavy hits, to make them feel solid.
+const HIT_STOP = { armored: 0.035, golden: 0.06, boss: 0.05, comboTier: 0.05, jackpot: 0.15 };
+const SCORE_COUNT_UP_RATE = 10;
+
 const GOAL_DISTANCE_FROM_END = 3;
 const DEADLINE_DASH_SPACING = 1;
 const EPILOGUE_TEXT_WIDTH = 22;
@@ -172,6 +204,9 @@ const createRedCellGeometry = (radius, segments = 32) => {
 	// LatheGeometry spins around Y; turn the axis towards the camera (Z).
 	return new THREE.LatheGeometry(points, 48).rotateX(Math.PI / 2);
 };
+
+/** The highest combo tier reached by a combo count, or undefined. */
+const comboTierFor = (combo) => COMBO_TIERS.findLast((tier) => combo >= tier.combo);
 
 /** Formats a duration in milliseconds as nanoseconds, e.g. "42,123,456,789 ns". */
 const formatNanoseconds = (milliseconds) => `${BigInt(Math.round(milliseconds * 1e6)).toLocaleString("en-US")} ns`;
@@ -301,6 +336,16 @@ class BreakoutGame {
 		this.recentPausedKeys = [];
 		this.isMaxPower = false;
 
+		this.coins = [];
+		this.nextCoinIndex = 0;
+		this.coinCount = 0;
+		this.lastCoinSoundAt = 0;
+		this.displayedScore = 0;
+		this.hitStopTime = 0;
+		this.scorePopupCount = 0;
+		this.shownComboTier = undefined;
+		this.tempVector = new THREE.Vector3();
+
 		this.gamepad = new GamepadInput();
 		this.gamepadMove = 0;
 		this.isGamepadConnected = false;
@@ -429,7 +474,14 @@ class BreakoutGame {
 		this.effectsLabel.className = "secret-effects";
 		this.bossLabel = document.createElement("span");
 		this.bossLabel.className = "secret-boss";
-		this.hud.append(this.scoreLabel, this.livesLabel, this.stageLabel, this.progressLabel, this.comboLabel, this.effectsLabel, this.bossLabel);
+		this.coinLabel = document.createElement("span");
+		this.coinLabel.className = "secret-coins";
+		this.hud.append(this.scoreLabel, this.livesLabel, this.coinLabel, this.stageLabel, this.progressLabel, this.comboLabel, this.effectsLabel, this.bossLabel);
+
+		this.comboEdge = document.createElement("div");
+		this.comboEdge.className = "secret-edge";
+		this.comboBurst = document.createElement("div");
+		this.comboBurst.className = "secret-combo-burst";
 
 		this.closeButton = document.createElement("button");
 		this.closeButton.type = "button";
@@ -453,7 +505,7 @@ class BreakoutGame {
 		this.toast = document.createElement("div");
 		this.toast.className = "secret-toast";
 
-		this.overlay.append(this.hud, this.pauseButton, this.muteButton, this.closeButton, this.messageBox, this.toast);
+		this.overlay.append(this.comboEdge, this.comboBurst, this.hud, this.pauseButton, this.muteButton, this.closeButton, this.messageBox, this.toast);
 		document.body.append(this.overlay);
 		this.updateHud();
 	}
@@ -506,6 +558,7 @@ class BreakoutGame {
 		this.createBeams();
 		this.createBoss();
 		this.createShards();
+		this.createCoins();
 		this.createDust();
 		this.createPipeline();
 	}
@@ -542,7 +595,9 @@ class BreakoutGame {
 					return;
 				}
 				const item = cell === "?" ? randomItem() : ICE_BRICK_ITEMS[cell];
-				const kind = item ? "ice" : { a: "armored", s: "tissue", r: "redCell" }[cell] ?? "allergen";
+				const basicKind = item ? "ice" : { a: "armored", s: "tissue", r: "redCell" }[cell] ?? "allergen";
+				const isGolden = (basicKind === "allergen" || basicKind === "armored") && Math.random() < GOLDEN_BRICK_CHANCE;
+				const kind = isGolden ? "golden" : basicKind;
 				this.bricks.push(this.createBrick({ kind, item, hue, x: column + 0.5, y, row, column }));
 			});
 		});
@@ -819,6 +874,10 @@ class BreakoutGame {
 		let material;
 		let geometry = this.brickGeometry;
 		switch (kind) {
+			case "golden":
+				color = new THREE.Color(0xffc933);
+				material = new THREE.MeshPhysicalMaterial({ color, emissive: 0xffaa00, emissiveIntensity: 0.6, metalness: 1, roughness: 0.2, clearcoat: 1 });
+				break;
 			case "tissue":
 				color = new THREE.Color(this.stage.theme.tissue);
 				material = new THREE.MeshPhysicalMaterial({ color, emissive: color, emissiveIntensity: 0.15, roughness: 0.55, clearcoat: 0.6, transparent: true, opacity: 0.92 });
@@ -874,7 +933,11 @@ class BreakoutGame {
 
 		// Ice bricks show the item they hold, allergens show what they are.
 		let icon = null;
-		const iconMap = item ? this.iconTextures.get(ITEMS[item].icon) : kind === "allergen" || kind === "armored" ? this.getEmojiTexture(randomElement(this.stage.allergens)) : null;
+		const iconMap = item ? this.iconTextures.get(ITEMS[item].icon) : kind === "golden"
+					? this.getEmojiTexture(GOLDEN_EMOJI)
+					: kind === "allergen" || kind === "armored"
+						? this.getEmojiTexture(randomElement(this.stage.allergens))
+						: null;
 		if (iconMap) {
 			icon = new THREE.Mesh(
 				this.brickIconGeometry,
@@ -892,7 +955,7 @@ class BreakoutGame {
 		}
 		this.scene.add(mesh);
 
-		const maxHitPoints = kind === "armored" ? 2 : 1;
+		const maxHitPoints = { armored: 2, golden: GOLDEN_HIT_POINTS }[kind] ?? 1;
 		return {
 			mesh,
 			edges,
@@ -1167,6 +1230,7 @@ class BreakoutGame {
 				this.lives = INITIAL_LIVES;
 				this.totalClearTime = 0;
 				this.isMaxPower = false;
+				this.coinCount = 0;
 				this.buildStage();
 				this.startStage();
 				break;
@@ -1320,6 +1384,7 @@ class BreakoutGame {
 		this.cameraX = this.clampCameraX(PADDLE_START_X);
 		this.placeCamera(0, 0);
 		this.resetBalls();
+		this.resetCoins();
 		this.stageTime = 0;
 		this.sound.startMusic(this.stage);
 		this.setState("intro");
@@ -1400,7 +1465,7 @@ class BreakoutGame {
 	}
 
 	updateHud() {
-		this.scoreLabel.textContent = `SCORE ${this.score.toLocaleString()}`;
+		this.coinLabel.textContent = `🪙 ${this.coinCount}`;
 		this.livesLabel.textContent = "♥".repeat(Math.max(this.lives, 0));
 		this.stageLabel.textContent = `${this.stageIndex + 1}/${STAGES.length}`;
 		this.comboLabel.textContent = this.combo >= 2 ? `COMBO ×${this.combo}` : "";
@@ -1459,6 +1524,13 @@ class BreakoutGame {
 			this.pipeline.render();
 			return;
 		}
+		this.updateScoreLabel(deltaTime);
+		this.updateComboEdge();
+		if (this.hitStopTime > 0) {
+			this.hitStopTime -= deltaTime;
+			this.pipeline.render();
+			return;
+		}
 		this.stateTime += deltaTime;
 		this.stageTime += deltaTime;
 
@@ -1473,6 +1545,7 @@ class BreakoutGame {
 		this.updateBricks(deltaTime);
 		this.updateLevel(deltaTime);
 		this.updateShards(deltaTime);
+		this.updateCoins(deltaTime);
 		this.updateDust(deltaTime);
 		this.updateBallVisuals(deltaTime);
 		this.updateProgressLabel();
@@ -1759,19 +1832,32 @@ class BreakoutGame {
 		ballColor?.copy(brick.color);
 		this.ballLight.intensity = 90;
 		this.cameraShake += 0.12;
+		const position = brick.mesh.position;
+		const isGolden = brick.kind === "golden";
+		let points;
 
 		if (brick.hitPoints > 0) {
-			brick.mesh.material.opacity = brick.baseOpacity * 0.55;
+			points = (isGolden ? 50 : 5) * this.combo;
 			brick.mesh.material.emissiveIntensity = 2.5;
-			this.score += 5 * this.combo;
-			this.spawnShards(brick.mesh.position, brick.color, SHARDS_PER_BRICK / 2, 4);
-			this.sound.armor();
-			this.sound.brick(this.combo);
+			if (isGolden) {
+				this.spawnShards(position, brick.color, SHARDS_PER_BRICK, 6);
+				this.spawnCoins(position, GOLDEN_COINS_PER_HIT, 6);
+				this.sound.goldenHit();
+				this.startHitStop(HIT_STOP.golden);
+			} else {
+				brick.mesh.material.opacity = brick.baseOpacity * 0.55;
+				this.spawnShards(position, brick.color, SHARDS_PER_BRICK / 2, 4);
+				this.sound.armor();
+				this.sound.brick(this.combo);
+				this.startHitStop(HIT_STOP.armored);
+			}
 		} else {
 			brick.alive = false;
 			brick.popTime = 0.0001;
-			this.score += (brick.kind === "armored" ? 20 : 10) * this.combo;
-			if (brick.kind === "ice") {
+			points = isGolden ? JACKPOT_SCORE : (brick.kind === "armored" ? 20 : 10) * this.combo;
+			if (isGolden) {
+				this.hitJackpot(position);
+			} else if (brick.kind === "ice") {
 				this.spawnShards(brick.mesh.position, new THREE.Color(0xcfeeff), SHARDS_PER_BRICK * 1.5, 8);
 				this.spawnItem(brick.item, brick.mesh.position);
 				this.sound.ice();
@@ -1782,6 +1868,190 @@ class BreakoutGame {
 					this.spawnItem(randomItem(), brick.mesh.position);
 				}
 			}
+			this.spawnCoins(position, COINS_PER_BRICK[brick.kind] ?? 0, 4);
+		}
+		this.score += points;
+		this.showScorePopup(position, points, isGolden && !brick.alive);
+		this.announceComboTier();
+		this.updateHud();
+	}
+
+	hitJackpot(position) {
+		this.spawnCoins(position, JACKPOT_COINS, 9);
+		for (let burst = 0; burst < 4; burst++) {
+			this.spawnShards(position, new THREE.Color().setHSL(0.12 + burst * 0.02, 1, 0.6), 30, 9);
+		}
+		this.showToast("JACKPOT!!");
+		this.sound.jackpot();
+		this.cameraShake += 0.6;
+		this.startHitStop(HIT_STOP.jackpot);
+	}
+
+	// ----- Juice: hit stop, score popups, combo tiers -----
+	startHitStop(duration) {
+		this.hitStopTime = Math.max(this.hitStopTime, duration);
+	}
+
+	/** Projects a field position to CSS pixels. */
+	fieldToScreen(position) {
+		const projected = this.tempVector.copy(position).project(this.camera);
+		return { x: ((projected.x + 1) / 2) * window.innerWidth, y: ((1 - projected.y) / 2) * window.innerHeight };
+	}
+
+	/** A "+points" label that pops out of the brick and floats away; it grows with the combo. */
+	showScorePopup(position, points, isJackpot = false) {
+		if (this.scorePopupCount >= MAX_SCORE_POPUPS) {
+			return;
+		}
+		const { x, y } = this.fieldToScreen(position);
+		const popup = document.createElement("div");
+		popup.className = isJackpot ? "secret-popup is-jackpot" : "secret-popup";
+		popup.textContent = `+${points.toLocaleString()}`;
+		popup.style.left = `${x}px`;
+		popup.style.top = `${y}px`;
+		popup.style.setProperty("--popup-scale", String(Math.min(1 + this.combo * 0.07, 2.4)));
+		popup.style.color = comboTierFor(this.combo)?.color ?? "#ffffff";
+		this.overlay.append(popup);
+		this.scorePopupCount += 1;
+		popup.addEventListener(
+			"animationend",
+			() => {
+				popup.remove();
+				this.scorePopupCount -= 1;
+			},
+			{ once: true },
+		);
+	}
+
+	announceComboTier() {
+		const tierIndex = COMBO_TIERS.findIndex((tier) => tier.combo === this.combo);
+		if (tierIndex < 0) {
+			return;
+		}
+		const tier = COMBO_TIERS[tierIndex];
+		this.comboBurst.textContent = tier.label;
+		this.comboBurst.style.setProperty("--burst-color", tier.color);
+		this.comboBurst.classList.remove("is-visible");
+		void this.comboBurst.offsetWidth;
+		this.comboBurst.classList.add("is-visible");
+		this.sound.comboTier(tierIndex);
+		this.startHitStop(HIT_STOP.comboTier);
+	}
+
+	/** The screen edge glows in the color of the current combo tier (rainbow at the top tier). */
+	updateComboEdge() {
+		const tier = comboTierFor(this.combo);
+		if (tier === this.shownComboTier) {
+			return;
+		}
+		this.shownComboTier = tier;
+		this.comboEdge.classList.toggle("is-active", tier !== undefined);
+		this.comboEdge.classList.toggle("is-rainbow", tier === COMBO_TIERS.at(-1));
+		if (tier) {
+			this.comboEdge.style.setProperty("--edge-color", tier.color);
+		}
+	}
+
+	/** The score label counts up towards the real score instead of jumping. */
+	updateScoreLabel(deltaTime) {
+		if (this.displayedScore > this.score) {
+			this.displayedScore = this.score;
+		} else if (this.displayedScore < this.score) {
+			const step = Math.max((this.score - this.displayedScore) * (1 - Math.exp(-SCORE_COUNT_UP_RATE * deltaTime)), 1);
+			this.displayedScore = Math.min(this.displayedScore + step, this.score);
+		}
+		const text = `SCORE ${Math.round(this.displayedScore).toLocaleString()}`;
+		if (this.scoreLabel.textContent !== text) {
+			this.scoreLabel.textContent = text;
+		}
+	}
+
+	// ----- Coins -----
+	createCoins() {
+		this.coinMesh = new THREE.InstancedMesh(
+			new THREE.CylinderGeometry(COIN_RADIUS, COIN_RADIUS, 0.05, 20).rotateX(Math.PI / 2),
+			new THREE.MeshStandardMaterial({ color: 0xffcc33, emissive: 0xffaa00, emissiveIntensity: 0.6, metalness: 1, roughness: 0.25 }),
+			COIN_POOL_SIZE,
+		);
+		this.coinMesh.frustumCulled = false;
+		const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+		for (let index = 0; index < COIN_POOL_SIZE; index++) {
+			this.coinMesh.setMatrixAt(index, hidden);
+			this.coins.push({ active: false, age: 0, spin: 0, position: new THREE.Vector3(), velocity: new THREE.Vector3() });
+		}
+		this.scene.add(this.coinMesh);
+	}
+
+	spawnCoins(origin, count, speed) {
+		for (let index = 0; index < count; index++) {
+			const coin = this.coins[this.nextCoinIndex];
+			this.nextCoinIndex = (this.nextCoinIndex + 1) % COIN_POOL_SIZE;
+			coin.active = true;
+			coin.age = 0;
+			coin.spin = randomBetween(6, 14);
+			coin.position.copy(origin);
+			coin.velocity.set(randomBetween(-1, 1), randomBetween(0.6, 1.6), 0).multiplyScalar(speed * randomBetween(0.5, 1));
+		}
+	}
+
+	resetCoins() {
+		const hidden = new THREE.Matrix4().makeScale(0, 0, 0);
+		this.coins.forEach((coin, index) => {
+			coin.active = false;
+			this.coinMesh.setMatrixAt(index, hidden);
+		});
+		this.coinMesh.instanceMatrix.needsUpdate = true;
+	}
+
+	updateCoins(deltaTime) {
+		const paddleTop = PADDLE_Y + PADDLE_HEIGHT / 2;
+		this.coins.forEach((coin, index) => {
+			if (!coin.active) {
+				return;
+			}
+			coin.age += deltaTime;
+			if (coin.age < COIN_SCATTER_TIME) {
+				coin.velocity.y -= GRAVITY * deltaTime;
+			} else {
+				// Homing in on the paddle, faster and faster.
+				const towardsPaddle = this.tempVector.set(this.paddleX - coin.position.x, paddleTop - coin.position.y, 0).normalize();
+				const homingSpeed = COIN_HOMING_SPEED + coin.age * 20;
+				coin.velocity.lerp(towardsPaddle.multiplyScalar(homingSpeed), 1 - Math.exp(-8 * deltaTime));
+			}
+			coin.position.addScaledVector(coin.velocity, deltaTime);
+
+			const isCaught = coin.age >= COIN_SCATTER_TIME && Math.abs(coin.position.x - this.paddleX) <= this.paddleWidth / 2 + COIN_RADIUS && Math.abs(coin.position.y - paddleTop) <= 0.5;
+			if (isCaught) {
+				coin.active = false;
+				this.collectCoin();
+			}
+			this.dummy.position.copy(coin.position);
+			this.dummy.rotation.set(0, coin.age * coin.spin, 0);
+			this.dummy.scale.setScalar(coin.active ? 1 : 0);
+			this.dummy.updateMatrix();
+			this.coinMesh.setMatrixAt(index, this.dummy.matrix);
+		});
+		this.coinMesh.instanceMatrix.needsUpdate = true;
+	}
+
+	collectCoin() {
+		this.coinCount += 1;
+		this.score += COIN_SCORE;
+		this.paddleMaterial.emissiveIntensity = Math.max(this.paddleMaterial.emissiveIntensity, 1.8);
+		const now = performance.now();
+		if (now - this.lastCoinSoundAt >= COIN_SOUND_INTERVAL_MS) {
+			this.lastCoinSoundAt = now;
+			this.sound.coin();
+		}
+		if (this.coinCount % COINS_PER_EXTRA_LIFE === 0) {
+			if (this.lives < MAX_LIVES) {
+				this.lives += 1;
+				this.showToast(`${this.coinCount} COINS! 1UP`);
+			} else {
+				this.score += 1000;
+				this.showToast(`${this.coinCount} COINS! +1,000`);
+			}
+			this.sound.oneUp();
 		}
 		this.updateHud();
 	}
@@ -1800,6 +2070,8 @@ class BreakoutGame {
 		if (color) {
 			color.setHex(0xff66dd);
 		}
+		this.startHitStop(HIT_STOP.boss);
+		this.showScorePopup(boss.position, boss.hitPoints > 0 ? 30 : 1030);
 		if (boss.hitPoints > 0) {
 			this.sound.bossHit();
 		} else {
@@ -2168,7 +2440,13 @@ class BreakoutGame {
 				if (brick.icon) {
 					brick.icon.rotation.z = Math.sin(time * 2 + brick.x) * 0.15;
 				}
-				const restingGlow = { tissue: 0.15, redCell: 0.12, ice: 0.2 }[brick.kind] ?? (brick.kind === "armored" && brick.hitPoints === brick.maxHitPoints ? 0.3 : 0.12);
+				// Golden bricks twinkle, so they stand out from the yellow allergen rows.
+				if (brick.kind === "golden" && Math.random() < deltaTime * 4) {
+					this.spawnShards(brick.mesh.position, GOLDEN_SPARKLE_COLOR, 1, 1.5);
+				}
+				const restingGlow =
+					{ tissue: 0.15, redCell: 0.12, ice: 0.2, golden: 0.6 + Math.sin(time * 6 + brick.x) * 0.3 }[brick.kind] ??
+					(brick.kind === "armored" && brick.hitPoints === brick.maxHitPoints ? 0.3 : 0.12);
 				material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, restingGlow, 5, deltaTime);
 			} else if (brick.popTime > 0) {
 				brick.popTime += deltaTime;
