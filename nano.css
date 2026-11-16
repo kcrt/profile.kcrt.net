@@ -255,6 +255,7 @@ button:hover,
 		<label for="navbar-toggle" class="navbar-burger">☰</label>
 		<nav class="navbar-menu"><a href="#a">A</a> ...</nav>
 	</header>
+	Optional: load nano.js to close the collapsed menu after a link is clicked.
 */
 .navbar {
 	position: fixed;
