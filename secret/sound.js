@@ -1,4 +1,4 @@
-/*! secret/sound.js — synthesized sound effects and music for the hidden breakout game */
+/*! secret/sound.js — synthesized sound effects and music for the hidden side-scrolling breakout */
 
 const MUTE_STORAGE_KEY = "kcrt-secret-muted";
 const MASTER_VOLUME = 0.5;
@@ -166,6 +166,44 @@ export class SoundEngine {
 		[0, 4, 7, 12].forEach((interval, index) => {
 			this.tone({ type: "triangle", frequency: midiToFrequency(72 + interval), duration: 0.18, volume: 0.22, when: index * 0.06 });
 		});
+	}
+
+	bossHit() {
+		this.tone({ type: "square", frequency: 220, endFrequency: 110, duration: 0.12, volume: 0.12 });
+		this.noise({ duration: 0.12, volume: 0.15, filterType: "bandpass", filterFrequency: 900 });
+	}
+
+	bossDown() {
+		this.noise({ duration: 1.2, volume: 0.3, filterType: "lowpass", filterFrequency: 1200 });
+		this.tone({ type: "sawtooth", frequency: 300, endFrequency: 40, duration: 1.1, volume: 0.2 });
+		[0, 7, 12, 19].forEach((interval, index) => {
+			this.tone({ type: "triangle", frequency: midiToFrequency(72 + interval), duration: 0.3, volume: 0.15, when: 0.5 + index * 0.07 });
+		});
+	}
+
+	/** A mast cell releasing a histamine granule. */
+	histamine() {
+		this.tone({ type: "sine", frequency: 700, endFrequency: 250, duration: 0.18, volume: 0.12 });
+	}
+
+	itch() {
+		[0, 1, 0, 1].forEach((step, index) => {
+			this.tone({ type: "square", frequency: step ? 520 : 460, duration: 0.05, volume: 0.07, when: index * 0.05 });
+		});
+	}
+
+	pauseChime() {
+		this.tone({ type: "triangle", frequency: 988, duration: 0.08, volume: 0.15 });
+		this.tone({ type: "triangle", frequency: 1319, duration: 0.12, volume: 0.15, when: 0.08 });
+	}
+
+	/** Power-up fanfare for the Konami code. */
+	maxPower() {
+		[0, 4, 7, 12, 16, 19, 24, 28].forEach((interval, index) => {
+			this.tone({ type: "square", frequency: midiToFrequency(60 + interval), duration: 0.12, volume: 0.1, when: index * 0.05 });
+			this.tone({ type: "triangle", frequency: midiToFrequency(72 + interval), duration: 0.2, volume: 0.12, when: index * 0.05 });
+		});
+		this.noise({ duration: 0.6, volume: 0.08, filterFrequency: 6000, when: 0.4 });
 	}
 
 	loseBall() {

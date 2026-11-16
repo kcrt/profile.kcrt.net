@@ -2,7 +2,7 @@
 "use strict";
 
 // Clicking the profile photo 10 times in a row (with less than 2 seconds between clicks)
-// loads and starts the hidden breakout game. The photo grows with every click, then glows
+// loads and starts the hidden side-scrolling breakout game. The photo grows with every click, then glows
 // while a loading bar shows the download / startup progress.
 // As a hint, the photo gives a little heartbeat every 10–30 seconds.
 (() => {
@@ -16,10 +16,10 @@
 	// Content-Length values, which can't be compared with the decompressed bytes we receive.
 	// Update them when secret/three/ is re-vendored (the game files are rough estimates).
 	const GAME_FILES = [
-		{ url: "./secret/breakout.js", bytes: 52000 },
+		{ url: "./secret/breakout.js", bytes: 74000 },
 		{ url: "./secret/breakout.css", bytes: 3000 },
-		{ url: "./secret/stages.js", bytes: 2300 },
-		{ url: "./secret/sound.js", bytes: 9000 },
+		{ url: "./secret/stages.js", bytes: 7000 },
+		{ url: "./secret/sound.js", bytes: 10000 },
 		{ url: "./secret/icon-textures.js", bytes: 2200 },
 		{ url: "./secret/three/build/three.webgpu.js", bytes: 1350894 },
 		{ url: "./secret/three/build/three.core.js", bytes: 1474799 },
