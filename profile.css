@@ -90,3 +90,118 @@ span.highlight {
 img.icon-shadow {
 	box-shadow: .3rem .3rem 1rem var(--iconShadowColor);
 }
+
+/* Profile photo doubles as the trigger for the hidden mode (see secret.js) */
+img.photo {
+	position: relative;
+	z-index: 1;
+	transition: transform .1s;
+	touch-action: manipulation;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* "Ba-dump": a hint that the photo hides something */
+img.photo.secret-heartbeat {
+	animation: secret-heartbeat .7s ease-out;
+}
+
+@keyframes secret-heartbeat {
+	0% {
+		transform: scale(1);
+	}
+
+	14% {
+		transform: scale(1.12);
+	}
+
+	28% {
+		transform: scale(.98);
+	}
+
+	42% {
+		transform: scale(1.07);
+	}
+
+	70%,
+	100% {
+		transform: scale(1);
+	}
+}
+
+img.photo.secret-charging {
+	transition: transform 1.2s cubic-bezier(.2, .8, .2, 1);
+	animation: secret-glow .5s ease-in-out infinite alternate;
+}
+
+@keyframes secret-glow {
+	from {
+		box-shadow: 0 0 .5rem .1rem #78c8ff, 0 0 1.5rem .3rem rgba(120, 200, 255, .4);
+	}
+
+	to {
+		box-shadow: 0 0 1rem .4rem #b4e4ff, 0 0 3rem 1rem rgba(120, 200, 255, .7);
+	}
+}
+
+.secret-loader {
+	position: fixed;
+	left: 50%;
+	bottom: 12%;
+	z-index: 1001;
+	width: min(20rem, 80vw);
+	padding: .75rem 1rem;
+	border: 1px solid rgba(255, 255, 255, .3);
+	border-radius: 1rem;
+	background: rgba(10, 16, 40, .75);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	color: #fff;
+	font-size: .85rem;
+	text-align: center;
+	font-variant-numeric: tabular-nums;
+	opacity: 0;
+	transform: translate(-50%, 1rem);
+	transition: opacity .4s .3s, transform .4s .3s;
+	pointer-events: none;
+}
+
+.secret-loader.is-visible {
+	opacity: 1;
+	transform: translate(-50%, 0);
+}
+
+.secret-loader-track {
+	position: relative;
+	height: .4rem;
+	margin-bottom: .4rem;
+	overflow: hidden;
+	border-radius: .2rem;
+	background: rgba(255, 255, 255, .15);
+}
+
+/* Compositor-only shimmer: keeps moving even while the main thread is busy starting the game */
+.secret-loader-track::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .7), transparent);
+	transform: translateX(-100%);
+	animation: secret-shimmer 1s linear infinite;
+	will-change: transform;
+}
+
+@keyframes secret-shimmer {
+	to {
+		transform: translateX(100%);
+	}
+}
+
+.secret-loader-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #78c8ff, #e0a0ff, #ffd966);
+	box-shadow: 0 0 .5rem #78c8ff;
+	transform: scaleX(0);
+	transform-origin: left;
+	transition: transform .2s;
+}
