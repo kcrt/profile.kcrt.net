@@ -28,15 +28,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 
 	<link rel="index" href="/" />
-	<link rel="profile" href="http://microformats.org/profile/hcard">
+	<link rel="profile" href="https://microformats.org/profile/hcard">
 
 
 	<link rel="icon" href="./kcrt.png" />
 
-	<link rel="stylesheet" href="./bootstrap4/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="./nano.css" />
 	<script src="./fontawesome5/js/all.min.js" defer></script>
-	<script src="./jquery-3.4.1.min.js" defer></script>
-	<script src="./bootstrap4/js/bootstrap.min.js" defer></script>
 
 	<link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet" />
 
@@ -49,26 +47,18 @@
 </head>
 
 <body>
-	<nav class="navbar fixed-top navbar-expand-lg navbar-light bg-light">
-		<a class="navbar-brand" href="#">
-			kcrt's Portfolio
-		</a>
-		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-			aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-			<!--<span class="navbar-toggler-icon"></span>-->
-			<i class="fas fa-hamburger"></i>
-		</button>
-		<div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-			<div class="navbar-nav">
-				<a class="nav-item nav-link" href="#"><i class="fas fa-user-md"></i> About me</a>
-				<a class="nav-item nav-link" href="#license"><i class="fas fa-id-card"></i> Licenses and
-					Certifications</a>
-				<a class="nav-item nav-link" href="#publications"><i class="fas fa-pen-nib"></i> Publications</a>
-				<a class="nav-item nav-link" href="#links"><i class="fas fa-link"></i> Links</a>
-			</div>
-		</div>
-	</nav>
-	<div class="container">
+	<header class="navbar">
+		<a class="navbar-brand" href="#">kcrt's Portfolio</a>
+		<input type="checkbox" id="navbar-toggle" class="navbar-toggle" aria-label="Toggle navigation" />
+		<label for="navbar-toggle" class="navbar-burger"><i class="fas fa-hamburger"></i></label>
+		<nav class="navbar-menu">
+			<a href="#"><i class="fas fa-user-md"></i> About me</a>
+			<a href="#license"><i class="fas fa-id-card"></i> Licenses and Certifications</a>
+			<a href="#publications"><i class="fas fa-pen-nib"></i> Publications</a>
+			<a href="#links"><i class="fas fa-link"></i> Links</a>
+		</nav>
+	</header>
+	<main>
 
 		<section class="vcard" id="me">
 			<h2><i class="fas fa-user-md"></i>&nbsp;<ruby>髙橋<rp>(</rp>
@@ -77,18 +67,17 @@
 					亨平<rp>(</rp>
 					<rt>きょうへい</rt>
 					<rp>)</rp>
-				</ruby> <small class="text-muted fn n"><span class="family-nae sort-string">TAKAHASHI</span>, <span
+				</ruby> <small class="fn n"><span class="family-nae sort-string">TAKAHASHI</span>, <span
 						class="givein-name">Kyohei</span></small>
 			</h2>
-			<div class="row align-items-center">
-				<div class="col-lg-3" style="text-align: center; padding: 32px;">
-					<img alt="logo" src="./kcrt.png" class="rounded-circle photo align-self-center icon-shadow"
-						width="128" height="128" />
+			<div class="columns">
+				<div class="column-narrow photo-column text-center">
+					<img alt="logo" src="./kcrt.png" class="circle photo icon-shadow" width="128" height="128" />
 				</div>
-				<div class="vcardbox col-lg-9">
-					<ul class="list-group list-group-flush">
-						<li class="list-group-item">ハンドルネーム: <span class="nickname">kcrt</span></li>
-						<li class="list-group-item">メールアドレス: <a class='email
+				<div class="vcardbox">
+					<ul class="list">
+						<li>ハンドルネーム: <span class="nickname">kcrt</span></li>
+						<li>メールアドレス: <a class='email
 href="mailto:x@y"
 ' href='
 &#x20;&#x6d;ai&#x6c;&#116;&#111;&#x3A;&#37;&#x32;&#48;&#x6B;&#x63;%&#x37;&#x32;%&#x37;4%&#x34;&#x30;%&#x36;b&#99;&#x72;&#x74;%&#50;&#x65;&#x6E;e&#x74;?
@@ -100,16 +89,16 @@ mailto:abuse@hotmail.com
 							</a>
 							&nbsp; <span class="keyinfo">送付の際、本文に DXwLQ3ZjyueiKVeR と記載すると迷惑メールと判定されなくなります。</span>
 						</li>
-						<li class="list-group-item">ウェブサイト: <a class="org" href="https://www.kcrt.net">Nanoseconds
+						<li>ウェブサイト: <a class="org" href="https://www.kcrt.net">Nanoseconds
 								Hunter</a></li>
-						<li class="list-group-item">住んでいるところ： <span class="adr"><span class="country-name">Japan</span>,
+						<li>住んでいるところ： <span class="adr"><span class="country-name">Japan</span>,
 								<span class="region">神奈川県</span></span></li>
-						<li class="list-group-item">誕生日： <time class="bday" datetime="1984-09-24">9月24日</time></li>
-						<li class="list-group-item"><i class="publication-icon fas fa-key"></i> <a class="url"
+						<li>誕生日： <time class="bday" datetime="1984-09-24">9月24日</time></li>
+						<li><i class="publication-icon fas fa-key"></i> <a class="url"
 								href="https://github.com/kcrt.keys">SSH</a><span class="keyinfo"> ssh-ed25519
 								AAAAC3NzaC1lZDI1NTE5AAAAIJOPgJQcfABeJYG6ANq9VpyO<span
 									class="activeinfo highlight">/kcrt/</span>V5gp7pcZpCtW6U</span></li>
-						<li class="list-group-item"><i class="publication-icon fas fa-key"></i> <a
+						<li><i class="publication-icon fas fa-key"></i> <a
 								href="https://keys.openpgp.org/search?q=kcrt@kcrt.net" class="url">PGP</a>
 								<span class="keyinfo">71B8 853B 1E43 641D E836  1ACB 77B2 E377 F175 D2EF</span>
 							</li>
@@ -119,45 +108,45 @@ mailto:abuse@hotmail.com
 		</section>
 
 		<section id="license">
-			<h2><i class="fas fa-id-card"></i> 資格と免許 <small class="text-muted">Licenses and Certifications</small></h2>
-			<div class="media-body">
-				<ul class="list-group list-group-flush">
-					<li class="list-group-item"><i class="license-icon fas fa-keyboard fa-lg fa-fw"></i>
+			<h2><i class="fas fa-id-card"></i> 資格と免許 <small class="muted">Licenses and Certifications</small></h2>
+			<div>
+				<ul class="list">
+					<li><i class="license-icon fas fa-keyboard fa-lg fa-fw"></i>
 						ソフトウェア開発技術者 (現在の応用情報技術者に相当)
-						<small class="text-muted">Software Design &amp; Development Engineer (National examination)
+						<small class="muted">Software Design &amp; Development Engineer (National examination)
 						</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-shield-alt fa-lg fa-fw"></i>
-						情報セキュリティスペシャリスト (現在の情報処理安全確保支援士に相当) <small class="text-muted">Information Security Specialist
+					<li><i class="license-icon fas fa-shield-alt fa-lg fa-fw"></i>
+						情報セキュリティスペシャリスト (現在の情報処理安全確保支援士に相当) <small class="muted">Information Security Specialist
 							(National
 							examination)</small></li>
-					<li class="list-group-item"><i class="license-icon fas fa-brain fa-lg fa-fw"></i> 日本メディカルAI学会公認
+					<li><i class="license-icon fas fa-brain fa-lg fa-fw"></i> 日本メディカルAI学会公認
 						機械学習・深層学習基礎コース/メディカルAI専門コース 修了 </li>
-					<li class="list-group-item"><i class="license-icon fas fa-bolt fa-lg fa-fw"></i>
+					<li><i class="license-icon fas fa-bolt fa-lg fa-fw"></i>
 						第二種電気工事士
-						<small class="text-muted">2nd Class Qualified Certified Electrician</small>
+						<small class="muted">2nd Class Qualified Certified Electrician</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-stethoscope fa-lg fa-fw"></i> 医師免許 <small
-							class="text-muted">Medical license of Japan</small></li>
-					<li class="list-group-item"><i class="license-icon fas fa-plus-square fa-lg fa-fw"></i> 公衆衛生学修士
-						<small class="text-muted">Master of Public Health</small>
+					<li><i class="license-icon fas fa-stethoscope fa-lg fa-fw"></i> 医師免許 <small
+							class="muted">Medical license of Japan</small></li>
+					<li><i class="license-icon fas fa-plus-square fa-lg fa-fw"></i> 公衆衛生学修士
+						<small class="muted">Master of Public Health</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-graduation-cap fa-lg fa-fw"></i> 医学博士
-						<small class="text-muted">Doctor of Philosophy</small>
+					<li><i class="license-icon fas fa-graduation-cap fa-lg fa-fw"></i> 医学博士
+						<small class="muted">Doctor of Philosophy</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-chalkboard-teacher fa-lg fa-fw"></i>
+					<li><i class="license-icon fas fa-chalkboard-teacher fa-lg fa-fw"></i>
 						臨床研修指導医
-						<small class="text-muted">Clinical Training Instructor</small>
+						<small class="muted">Clinical Training Instructor</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-child fa-lg fa-fw"></i> 日本小児科学会 認定
+					<li><i class="license-icon fas fa-child fa-lg fa-fw"></i> 日本小児科学会 認定
 						小児科専門医・指導医
-						<small class="text-muted">Japan Pediatric Society Board Certified Pediatrician, Instructor
+						<small class="muted">Japan Pediatric Society Board Certified Pediatrician, Instructor
 						</small>
 					</li>
-					<li class="list-group-item"><i class="license-icon fas fa-diagnoses fa-lg fa-fw"></i> 日本アレルギー学会
+					<li><i class="license-icon fas fa-diagnoses fa-lg fa-fw"></i> 日本アレルギー学会
 						アレルギー専門医
 						(小児科)
-						<small class="text-muted"> Japanese Society of Allergology Certified Specialist (Pediatrics)
+						<small class="muted"> Japanese Society of Allergology Certified Specialist (Pediatrics)
 						</small>
 					</li>
 				</ul>
@@ -165,11 +154,11 @@ mailto:abuse@hotmail.com
 		</section>
 
 		<section id="publications">
-			<h2><i class="fas fa-pen-nib"></i> 著作と共著 <small class="text-muted">Publications</small></h2>
+			<h2><i class="fas fa-pen-nib"></i> 著作と共著 <small class="muted">Publications</small></h2>
 			<div>
-				<div class="media-body">
-					<ul class="list-group list-group-flush">
-						<li class="list-group-item"><i class="publication-icon fas fa-book"></i> <a
+				<div>
+					<ul class="list">
+						<li><i class="publication-icon fas fa-book"></i> <a
 								href="https://www.kcrt.net/ppr">Programmer's Pocket Reference</a> (技術書典7; <time
 								class="bday" datetime="2019-09-22">2019年9月22日</time>):
 							プログラマ向けの情報を集めた、A5サイズ約200ページのマニュアルです。</li>
@@ -178,42 +167,42 @@ mailto:abuse@hotmail.com
 				<p> 医学論文(英語)については、<span itemscope itemtype="https://schema.org/Person"><a itemprop="sameAs"
 							href="https://orcid.org/0000-0003-1220-7386" target="orcid.widget"
 							rel="me noopener noreferrer" style="vertical-align:top;"><img
-								src="https://orcid.org/sites/default/files/images/orcid_16x16.png"
-								style="width:1em;margin-right:.1em;" alt="ORCID iD icon">ORCID
+								src="./orcid-id.svg"
+								style="width:1em;margin-right:.1em;" alt="ORCID iD icon">ORCID iD
 							(0000-0003-1220-7386)</a></span>をご参照ください。 <br />
 					For medical articles, please refer to <span itemscope itemtype="https://schema.org/Person"><a
 							itemprop="sameAs" href="https://orcid.org/0000-0003-1220-7386" target="orcid.widget"
 							rel="me noopener noreferrer" style="vertical-align:top;"><img
-								src="https://orcid.org/sites/default/files/images/orcid_16x16.png"
-								style="width:1em;margin-right:.1em;" alt="ORCID iD icon">ORCID
+								src="./orcid-id.svg"
+								style="width:1em;margin-right:.1em;" alt="ORCID iD icon">ORCID iD
 							(0000-0003-1220-7386)</a></span>.</p>
 			</div>
 		</section>
 
 		<section id="links">
-			<h2><i class="fas fa-link"></i> リンク <small class="text-muted">Links</small></h2>
-			<div class="row">
-				<a class="btn btn-light col-sm-2" role="button" href="https://github.com/kcrt" title="github">
+			<h2><i class="fas fa-link"></i> リンク <small class="muted">Links</small></h2>
+			<div class="buttons">
+				<a class="button" href="https://github.com/kcrt" title="github">
 					<i class="link-icon fab fa-github fa-3x"></i>
 				</a>
-				<a class="btn btn-light col-sm-2" role="button" href="https://www.npmjs.com/~kcrt" title="npm">
+				<a class="button" href="https://www.npmjs.com/~kcrt" title="npm">
 					<i class="link-icon fab fa-npm fa-3x"></i>
 				</a>
-				<a class="btn btn-light col-sm-2" role="button" href="http://ja.stackoverflow.com/users/6092/kcrt"
+				<a class="button" href="https://ja.stackoverflow.com/users/6092/kcrt"
 					title="Stack overflow">
 					<i class="link-icon fab fa-stack-overflow fa-3x"></i>
 				</a>
-				<a class="btn btn-light col-sm-2" role="button" href="http://twitter.com/kcrt" title="twitter">
+				<a class="button" href="https://twitter.com/kcrt" title="twitter">
 					<span class="fa-layers fa-lg fa-fw fa-3x">
 						<i class="link-icon fab fa-twitter"></i>
 						<span class="fa-layers-counter fa-layers-bottom-right" id="twitter-tomb"
 							style="background: none;">🪦</span>
 					</span>
 				</a>
-				<a class="btn btn-light col-sm-2" role="button" href="http://tumblr.kcrt.net/" title="tumblr">
+				<a class="button" href="https://tumblr.kcrt.net/" title="tumblr">
 					<i class="link-icon fab fa-tumblr fa-3x"></i>
 				</a>
-				<a class="btn btn-light col-sm-2" role="button" href="http://www.youtube.com/profile?user=kcrt"
+				<a class="button" href="https://www.youtube.com/@kcrt"
 					title="YouTube">
 					<i class="link-icon fab fa-youtube fa-3x"></i>
 				</a>
@@ -222,12 +211,11 @@ mailto:abuse@hotmail.com
 		<footer id="footer">
 			<hr />
 			Feel free to link to my site!<br />
-			This site uses: <a href="https://getbootstrap.com">Bootstrap</a>, good old <a
-				href="https://jquery.com/">jQuery</a> (because Bootstrap wants this), and <a
+			This site uses: handmade <a href="./nano.css">nano.css</a> and <a
 				href="https://fontawesome.com/">Font Awesome</a>.
 		</footer>
 
-	</div>
+	</main>
 
 </body>
 
