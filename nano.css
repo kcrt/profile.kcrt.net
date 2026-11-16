@@ -375,6 +375,16 @@ html:has(.navbar) {
 	border-bottom: 0;
 }
 
+/* SVG sprite icon: <svg class="icon" aria-hidden="true"><use href="icons.svg#name"></use></svg> */
+.icon {
+	display: inline-block;
+	width: 1.25em;
+	height: 1em;
+	overflow: visible;
+	vertical-align: -.125em;
+	fill: currentColor;
+}
+
 /* ---------- Utilities ---------- */
 .muted {
 	color: var(--nano-muted);
