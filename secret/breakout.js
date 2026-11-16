@@ -154,6 +154,25 @@ const reportStats = (event) => {
 	fetch(STATS_URLS[event], { mode: "no-cors", credentials: "omit", cache: "no-store", keepalive: true }).catch(() => {});
 };
 
+/**
+ * A red blood cell: a biconcave disc (thick rim, thin dimpled center), facing the camera.
+ * The thickness follows Evans & Fung's fit of the human erythrocyte (Microvasc Res 1972;4:335–347):
+ * T(r) = sqrt(1 − ρ²)·(C0 + C2·ρ² + C4·ρ⁴), ρ = r / R, with R = 3.91, C0 = 0.81, C2 = 7.83, C4 = −4.39 (µm).
+ */
+const createRedCellGeometry = (radius, segments = 32) => {
+	const cellRadius = 3.91;
+	const halfThickness = (rho) => (Math.sqrt(Math.max(1 - rho * rho, 0)) * (0.81 + 7.83 * rho ** 2 - 4.39 * rho ** 4)) / 2 / cellRadius;
+	// ρ = sin θ puts more points near the rim, where the surface curves fastest.
+	const profile = [];
+	for (let step = 0; step <= segments; step++) {
+		const rho = Math.sin(((step / segments) * Math.PI) / 2);
+		profile.push(new THREE.Vector2(rho * radius, halfThickness(rho) * radius));
+	}
+	const points = [...profile, ...profile.slice(0, -1).reverse().map((point) => new THREE.Vector2(point.x, -point.y))];
+	// LatheGeometry spins around Y; turn the axis towards the camera (Z).
+	return new THREE.LatheGeometry(points, 48).rotateX(Math.PI / 2);
+};
+
 /** Formats a duration in milliseconds as nanoseconds, e.g. "42,123,456,789 ns". */
 const formatNanoseconds = (milliseconds) => `${BigInt(Math.round(milliseconds * 1e6)).toLocaleString("en-US")} ns`;
 
@@ -480,7 +499,7 @@ class BreakoutGame {
 		this.brickGeometry = new THREE.BoxGeometry(BRICK_SIZE, BRICK_SIZE, BRICK_DEPTH);
 		this.brickEdgesGeometry = new THREE.EdgesGeometry(this.brickGeometry);
 		this.brickIconGeometry = new THREE.PlaneGeometry(BRICK_SIZE * 0.82, BRICK_SIZE * 0.82);
-		this.redCellGeometry = new THREE.TorusGeometry(BRICK_SIZE * 0.32, BRICK_SIZE * 0.16, 12, 24);
+		this.redCellGeometry = createRedCellGeometry(BRICK_SIZE * 0.5);
 
 		this.createPaddle();
 		this.createGuard();
@@ -807,7 +826,7 @@ class BreakoutGame {
 			case "redCell":
 				color = new THREE.Color(0xff3344);
 				geometry = this.redCellGeometry;
-				material = new THREE.MeshPhysicalMaterial({ color, emissive: color, emissiveIntensity: 0.35, roughness: 0.3, clearcoat: 1 });
+				material = new THREE.MeshPhysicalMaterial({ color, emissive: color, emissiveIntensity: 0.12, roughness: 0.35, clearcoat: 1 });
 				break;
 			case "ice":
 				color = new THREE.Color(0x3d8fd6);
@@ -2141,14 +2160,15 @@ class BreakoutGame {
 				brick.mesh.scale.setScalar(Math.max(appear, 0.001));
 				brick.mesh.position.z = Math.sin(time * 1.5 + brick.x * 0.6 + brick.baseY * 0.4) * 0.08;
 				if (brick.kind === "redCell") {
-					brick.mesh.rotation.y = Math.sin(time * 1.2 + brick.bobPhase) * 0.6;
+					// Tumbling a little shows off the dimple.
+					brick.mesh.rotation.set(0.5 + Math.sin(time * 0.9 + brick.bobPhase) * 0.3, Math.sin(time * 1.2 + brick.bobPhase) * 0.7, 0);
 				} else {
 					brick.mesh.rotation.x = Math.sin(time + brick.x) * 0.05;
 				}
 				if (brick.icon) {
 					brick.icon.rotation.z = Math.sin(time * 2 + brick.x) * 0.15;
 				}
-				const restingGlow = { tissue: 0.15, redCell: 0.35, ice: 0.2 }[brick.kind] ?? (brick.kind === "armored" && brick.hitPoints === brick.maxHitPoints ? 0.3 : 0.12);
+				const restingGlow = { tissue: 0.15, redCell: 0.12, ice: 0.2 }[brick.kind] ?? (brick.kind === "armored" && brick.hitPoints === brick.maxHitPoints ? 0.3 : 0.12);
 				material.emissiveIntensity = THREE.MathUtils.damp(material.emissiveIntensity, restingGlow, 5, deltaTime);
 			} else if (brick.popTime > 0) {
 				brick.popTime += deltaTime;
