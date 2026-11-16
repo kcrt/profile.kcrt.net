@@ -50,12 +50,22 @@ section#me {
 }
 
 .link-icon {
+	font-size: 3em;
 	color: var(--nano-accent);
 }
 
+.icon-stack {
+	position: relative;
+	display: inline-block;
+	line-height: 1;
+}
+
 #twitter-tomb {
-	font-size: 2em;
-	padding: 0.4em .2em 0.1em 0.4em;
+	position: absolute;
+	right: -.1em;
+	bottom: -.1em;
+	font-size: 1.5em;
+	line-height: 1;
 }
 
 footer>hr {
