@@ -35,6 +35,17 @@
 
 	<link rel="stylesheet" href="./nano.css" />
 	<script src="./nano.js" defer></script>
+	<script type="importmap">
+		{
+			"imports": {
+				"three": "./secret/three/build/three.webgpu.js",
+				"three/webgpu": "./secret/three/build/three.webgpu.js",
+				"three/tsl": "./secret/three/build/three.tsl.js",
+				"three/addons/": "./secret/three/addons/"
+			}
+		}
+	</script>
+	<script src="./secret.js" defer></script>
 
 	<link href="https://fonts.googleapis.com/css?family=M+PLUS+Rounded+1c&display=swap" rel="stylesheet" />
 
