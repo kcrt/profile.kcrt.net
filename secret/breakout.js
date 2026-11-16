@@ -13,7 +13,7 @@ import { GamepadInput } from "./gamepad.js";
 // the ball to the right until it reaches the lymph node gate at the end of the stage.
 
 // ---------- Tunables ----------
-// World: x grows to the right (0 = start of the stage, 1 unit = 1 level cell), y = 0 is the rail.
+// World: x grows to the right (0 = start of the stage, 1 unit = 1 level cell), y = 0 is the paddle.
 const BRICK_BOTTOM_Y = 1.5; // center of the lowest brick row
 const CEILING_Y = BRICK_BOTTOM_Y + ROW_COUNT - 0.2;
 const VIEW_BOTTOM_Y = -1.6;
@@ -81,6 +81,7 @@ const INITIAL_LIVES = 5;
 const MAX_LIVES = 7;
 
 const GOAL_DISTANCE_FROM_END = 3;
+const DEADLINE_DASH_SPACING = 1;
 const EPILOGUE_TEXT_WIDTH = 22;
 // The message is right-aligned so its "!" ends just left of the start wall: with the camera at
 // the start, the edge of the screen shows a sliver of it as a hint for sharp-eyed players.
@@ -472,7 +473,7 @@ class BreakoutGame {
 		this.createPipeline();
 	}
 
-	/** (Re)creates everything that belongs to the current stage: bricks, rail, gate and backdrop. */
+	/** (Re)creates everything that belongs to the current stage: bricks, deadline, gate and backdrop. */
 	buildStage() {
 		for (const brick of this.bricks) {
 			this.scene.remove(brick.mesh);
@@ -510,7 +511,7 @@ class BreakoutGame {
 		});
 
 		this.createBackdrop();
-		this.createRail();
+		this.createDeadline();
 		this.createGate();
 		this.resetBoss();
 	}
@@ -597,15 +598,27 @@ class BreakoutGame {
 		this.leftBoundX = -this.stage.epilogue.width;
 	}
 
-	/** The glowing rail the paddle runs on, along the whole stage. */
-	createRail() {
+	/**
+	 * A dim red dashed line under the paddle: below it the ball is lost. It is kept dark and
+	 * dashed so it can't be mistaken for the (bright, solid) guard.
+	 */
+	createDeadline() {
 		const startX = -(this.stage.epilogue?.width ?? 0);
-		const rail = new THREE.Mesh(
-			new THREE.BoxGeometry(this.levelWidth - startX, 0.08, 0.3),
-			new THREE.MeshStandardMaterial({ color: 0x112233, emissive: 0x66ccff, emissiveIntensity: 1.2, transparent: true, opacity: 0.8 }),
+		const dashCount = Math.ceil((this.levelWidth - startX) / DEADLINE_DASH_SPACING);
+		const deadline = new THREE.InstancedMesh(
+			new THREE.BoxGeometry(DEADLINE_DASH_SPACING * 0.5, 0.05, 0.05),
+			new THREE.MeshBasicMaterial({ color: new THREE.Color(0xff4466).multiplyScalar(0.55), transparent: true, opacity: 0.6, depthWrite: false }),
+			dashCount,
 		);
-		rail.position.set((startX + this.levelWidth) / 2, PADDLE_Y - PADDLE_HEIGHT / 2 - 0.25, 0);
-		this.levelGroup.add(rail);
+		// The shared dummy may still hold the rotation / scale of the last shard.
+		this.dummy.rotation.set(0, 0, 0);
+		this.dummy.scale.setScalar(1);
+		for (let index = 0; index < dashCount; index++) {
+			this.dummy.position.set(startX + (index + 0.5) * DEADLINE_DASH_SPACING, PADDLE_Y - PADDLE_HEIGHT / 2 - 0.25, 0);
+			this.dummy.updateMatrix();
+			deadline.setMatrixAt(index, this.dummy.matrix);
+		}
+		this.levelGroup.add(deadline);
 	}
 
 	/** The lymph node gate at the end of the stage, with a barrier while the boss is alive. */
