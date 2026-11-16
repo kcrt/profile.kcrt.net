@@ -89,6 +89,11 @@ const EPILOGUE_TEXT_RIGHT_X = -1.3;
 const START_WALL_FADE_SPEED = 1.5;
 // Keys 1–3 jump to a stage, but only while developing locally.
 const IS_LOCAL_DEVELOPMENT = ["localhost", "127.0.0.1", "[::1]"].includes(location.hostname);
+// Visits to these links are counted by link.kcrt.net (they just answer "OK").
+const STATS_URLS = {
+	enterGame: "https://link.kcrt.net/profile-kcrt-net-enter-game",
+	clearGame: "https://link.kcrt.net/profile-kcrt-net-clear-game",
+};
 const GOAL_RING_RADIUS = 2.6;
 
 // Mast cell boss guarding the gate of the last stage.
@@ -136,6 +141,18 @@ const randomBetween = (min, max) => min + Math.random() * (max - min);
 const randomItem = () => ITEM_TYPES[Math.floor(Math.random() * ITEM_TYPES.length)];
 const randomElement = (array) => array[Math.floor(Math.random() * array.length)];
 const nextFrame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+/**
+ * Counts an event by visiting its link (not while developing locally). The response is
+ * opaque and ignored; failures don't matter.
+ * @param {keyof typeof STATS_URLS} event
+ */
+const reportStats = (event) => {
+	if (IS_LOCAL_DEVELOPMENT) {
+		return;
+	}
+	fetch(STATS_URLS[event], { mode: "no-cors", credentials: "omit", cache: "no-store", keepalive: true }).catch(() => {});
+};
 
 /** Formats a duration in milliseconds as nanoseconds, e.g. "42,123,456,789 ns". */
 const formatNanoseconds = (milliseconds) => `${BigInt(Math.round(milliseconds * 1e6)).toLocaleString("en-US")} ns`;
@@ -362,6 +379,7 @@ class BreakoutGame {
 		this.ballIntroFrom.copy(this.screenToField(photoRect.left + photoRect.width / 2, photoRect.top + photoRect.height / 2));
 		this.photo.style.visibility = "hidden";
 		this.showOverlay();
+		reportStats("enterGame");
 		this.bindEvents();
 		this.startStage();
 		this.lastFrameTime = performance.now();
@@ -1795,6 +1813,7 @@ class BreakoutGame {
 			this.setState("stageClear");
 		} else {
 			this.sound.allClear();
+			reportStats("clearGame");
 			this.celebrate();
 			this.setState("complete");
 		}
